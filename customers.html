@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Customers</title>
+</head>
+<body>
+
+<h2>👥 Customer List</h2>
+<div id="list"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFcVgtofCuu3uQpMiofAPm3JQ0xiaeJVQ",
+    authDomain: "mutoiba-textiles.firebaseapp.com",
+    projectId: "mutoiba-textiles",
+    storageBucket: "mutoiba-textiles.appspot.com",
+    messagingSenderId: "544691020034",
+    appId: "1:544691020034:web:82ee6c0f8e94256fbce21b"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const snap = await getDocs(collection(db, "customers"));
+  snap.forEach(doc => {
+    const c = doc.data();
+    list.innerHTML += `
+      <p>
+        <b>${c.name}</b><br>
+        📞 ${c.phone}<br>
+        💰 Balance: ₹${c.balance}
+      </p><hr>
+    `;
+  });
+</script>
+
+</body>
+</html>
