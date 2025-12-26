@@ -4,26 +4,48 @@
     <meta charset="UTF-8">
     <title>Bill Generator | Mutoiba Textiles</title>
     <link rel="stylesheet" href="css/style.css">
-    <style>
-        @media print { 
-            .no-print { display: none; } 
-            body { background: white; padding: 0; } 
-            .card { box-shadow: none; border: none; width: 100% !important; max-width: 100% !important; }
-        }
-        .bill-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-        .bill-header h1 { margin: 0; font-size: 24px; letter-spacing: 2px; }
-        .bill-header p { margin: 2px 0; font-size: 13px; color: #333; }
+        <style>
+        /* General Styles */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
-        .bill-info { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 14px; line-height: 1.6; }
+        /* Fix for incomplete right side on download/print */
+        @media print { 
+            .no-print { display: none !important; } 
+            body { background: white; margin: 0; padding: 0; } 
+            .card { 
+                box-shadow: none !important; 
+                border: none !important; 
+                width: 100% !important; 
+                max-width: 100% !important; 
+                margin: 0 !important; 
+                padding: 10px !important; /* Slight padding to keep text off the edge */
+            }
+            #printable-bill {
+                width: 100% !important;
+                box-sizing: border-box; /* Ensures padding doesn't push width over 100% */
+            }
+            .bill-table {
+                width: 100% !important;
+                table-layout: auto; /* Adjusts columns to fit content */
+            }
+        }
+
+        /* Bill Visual Design */
+        .bill-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+        .bill-header h1 { margin: 0; font-size: 22px; }
+        .bill-header p { margin: 2px 0; font-size: 12px; }
+        
+        .bill-info { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 13px; }
         
         .bill-table { width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid #000; }
-        .bill-table th { background: #f4f4f4; border: 1px solid #000; padding: 10px; text-align: left; }
-        .bill-table td { border-right: 1px solid #000; border-left: 1px solid #000; padding: 10px; text-align: left; height: 25px; }
-        .bill-table tr:last-child td { border-bottom: 1px solid #000; }
+        .bill-table th { background: #f2f2f2; border: 1px solid #000; padding: 8px; font-size: 13px; }
+        .bill-table td { border: 1px solid #000; padding: 8px; font-size: 13px; }
         
-        .total-section { text-align: right; margin-top: 0; border: 1px solid #000; border-top: none; padding: 10px; background: #f9f9f9; }
-        .footer-note { margin-top: 20px; font-size: 11px; line-height: 1.4; border: 1px solid #eee; padding: 10px; border-radius: 5px; }
-        .signature-area { display: flex; justify-content: space-between; margin-top: 60px; font-weight: bold; }
+        .total-section { text-align: right; margin-top: 10px; padding: 10px; border: 1px solid #000; background: #fafafa; }
+        .signature-area { display: flex; justify-content: space-between; margin-top: 50px; font-size: 13px; }
+        
+        /* Layout container */
+        .container { padding: 1rem; max-width: 800px; margin: auto; }
     </style>
 </head>
 <body>
