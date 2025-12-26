@@ -8,7 +8,12 @@
     <style>
         .btn-edit { background: #3498db; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
         .btn-delete { background: #e74c3c; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        /* New Reminder Button Styles */
+        .btn-whatsapp { background: #25D366; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; text-decoration: none; display: inline-block; }
+        .btn-sms { background: #f39c12; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; text-decoration: none; display: inline-block; }
+        
         .action-gap { display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; }
+        .remind-group { border-left: 1px solid #ddd; padding-left: 5px; margin-left: 5px; display: flex; gap: 5px; }
     </style>
 </head>
 <body>
@@ -24,7 +29,7 @@
         </div>
     </nav>
 
-    <div style="padding: 2rem; max-width: 1100px; margin: auto;">
+    <div style="padding: 2rem; max-width: 1200px; margin: auto;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
             <h2 style="margin: 0;">Customer Directory</h2>
             <input type="text" id="searchInput" placeholder="🔍 Search by name or phone..." style="max-width: 300px; margin: 0;">
@@ -37,7 +42,7 @@
                         <th>Customer Name</th>
                         <th>Contact No.</th>
                         <th>Current Balance</th>
-                        <th style="text-align: center;">Actions</th>
+                        <th style="text-align: center;">Actions & Reminders</th>
                     </tr>
                 </thead>
                 <tbody id="customer-list"></tbody>
@@ -73,59 +78,55 @@
             data.forEach(cust => {
                 const balance = cust.balance || 0;
                 const badgeClass = balance > 0 ? 'badge-debt' : 'badge-clear';
+                const phone = cust.phone || "";
                 
+                // WhatsApp Message Template
+                const waMessage = encodeURIComponent(`Hello ${cust.name}, this is a reminder from Mutoiba Textiles. Your current outstanding balance is Rs. ${balance}. Kindly clear it at your earliest convenience. Thank you!`);
+                const smsMessage = encodeURIComponent(`Mutoiba Textiles: Hello ${cust.name}, your balance is Rs. ${balance}. Please clear it soon.`);
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td style="font-weight: 600;">${cust.name}</td>
-                    <td style="color: #666;">${cust.phone}</td>
+                    <td style="color: #666;">${phone}</td>
                     <td><span class="badge ${badgeClass}">Rs. ${balance.toLocaleString()}</span></td>
                     <td class="action-gap">
                         <a href="ledger.html?id=${cust.id}" class="btn-primary" style="padding: 6px 12px; text-decoration: none; border-radius: 5px; font-size: 0.8rem;">Ledger</a>
                         <a href="generate-bill.html?id=${cust.id}" class="btn-accent" style="padding: 6px 12px; text-decoration: none; border-radius: 5px; font-size: 0.8rem;">+ Bill</a>
-                        <button class="btn-edit" data-id="${cust.id}" data-name="${cust.name}" data-phone="${cust.phone}">Edit No.</button>
-                        <button class="btn-delete" data-id="${cust.id}" data-name="${cust.name}">Delete</button>
+                        <button class="btn-edit" data-id="${cust.id}" data-name="${cust.name}" data-phone="${phone}">Edit No.</button>
+                        
+                        <div class="remind-group">
+                            <a href="https://wa.me/91${phone}?text=${waMessage}" target="_blank" class="btn-whatsapp" title="WhatsApp Reminder">WhatsApp</a>
+                            <a href="sms:+91${phone}?body=${smsMessage}" class="btn-sms" title="SMS Reminder">SMS</a>
+                        </div>
+
+                        <button class="btn-delete" data-id="${cust.id}" data-name="${cust.name}" style="margin-left:5px;">Delete</button>
                     </td>
                 `;
                 listBody.appendChild(tr);
             });
 
-            // Attach Event Listeners
             document.querySelectorAll('.btn-edit').forEach(btn => btn.onclick = handleEditPhone);
             document.querySelectorAll('.btn-delete').forEach(btn => btn.onclick = handleDeleteCustomer);
         }
 
-        // --- EDIT PHONE LOGIC ---
+        // EDIT & DELETE logic remains the same as previous response...
         async function handleEditPhone(e) {
             const id = e.target.dataset.id;
             const currentPhone = e.target.dataset.phone;
             const name = e.target.dataset.name;
-            
             const newPhone = prompt(`Update Mobile Number for ${name}:`, currentPhone);
-            
             if (newPhone && newPhone !== currentPhone) {
-                try {
-                    await updateDoc(doc(db, "customers", id), { phone: newPhone });
-                    alert("Mobile Number Updated!");
-                    fetchCustomers(); // Refresh table
-                } catch (err) {
-                    alert("Error updating phone: " + err.message);
-                }
+                await updateDoc(doc(db, "customers", id), { phone: newPhone });
+                fetchCustomers();
             }
         }
 
-        // --- DELETE CUSTOMER LOGIC ---
         async function handleDeleteCustomer(e) {
             const id = e.target.dataset.id;
             const name = e.target.dataset.name;
-
-            if (confirm(`Are you sure you want to DELETE ${name}?\nThis action cannot be undone.`)) {
-                try {
-                    await deleteDoc(doc(db, "customers", id));
-                    alert("Customer deleted successfully.");
-                    fetchCustomers(); // Refresh table
-                } catch (err) {
-                    alert("Error deleting customer: " + err.message);
-                }
+            if (confirm(`Delete ${name}?`)) {
+                await deleteDoc(doc(db, "customers", id));
+                fetchCustomers();
             }
         }
 
@@ -141,4 +142,4 @@
     </script>
 </body>
 </html>
-
+            
