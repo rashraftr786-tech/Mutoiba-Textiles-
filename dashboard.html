@@ -1,14 +1,51 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Dashboard – Mutoiba Textiles</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="css/style.css">
+    <title>Dashboard | Mutoiba Textiles</title>
 </head>
 <body>
+    <nav class="nav-bar">
+        <strong>Mutoiba Textiles</strong>
+        <div class="nav-links">
+            <a href="customers.html">Customers</a>
+            <a href="add-customer.html">Add New</a>
+            <a href="#" id="logout-btn">Logout</a>
+        </div>
+    </nav>
 
-<h2>📊 Dashboard</h2>
+    <div style="padding: 2rem; max-width: 1000px; margin: auto;">
+        <h1>Welcome, Admin</h1>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div class="card" style="text-align: center;">
+                <h3 id="cust-count">...</h3>
+                <p>Total Customers</p>
+            </div>
+            <div class="card" style="text-align: center; border-left: 5px solid var(--accent);">
+                <h3>Manage</h3>
+                <a href="add-customer.html" style="color: var(--primary); text-decoration: none; font-weight: bold;">+ Add New Customer</a>
+            </div>
+        </div>
+    </div>
 
-<a href="add-customer.html">➕ Add Customer</a><br><br>
-<a href="customers.html">👥 View Customers</a>
+    <script type="module">
+        import { auth, db } from './js/firebase.js';
+        import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+        // Protect Route
+        onAuthStateChanged(auth, (user) => {
+            if (!user) window.location.href = 'index.html';
+        });
+
+        // Logout
+        document.getElementById('logout-btn').onclick = () => signOut(auth);
+
+        // Simple Stat Loader
+        const querySnapshot = await getDocs(collection(db, "customers"));
+        document.getElementById('cust-count').innerText = querySnapshot.size;
+    </script>
 </body>
 </html>
+
