@@ -2,39 +2,86 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Mutoiba Textiles | Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mutoiba Textiles | Admin Portal</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
-        /* Ensures the login card is perfectly centered on the screen */
         body {
             margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background-color: #f4f7f6; /* Light professional background */
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        /* Increased card size and added professional shadow */
+        .login-card {
+            background: white;
+            width: 100%;
+            max-width: 450px; /* Increased width */
+            padding: 40px;    /* Increased internal spacing */
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
         }
         .login-logo {
-            width: 120px;
-            height: 120px;
-            object-fit: contain;
-            display: block;
-            margin: 0 auto 15px auto;
-            border-radius: 10px;
+            width: 140px; /* Larger logo */
+            height: auto;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        .business-address {
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.5;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .login-form input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box; /* Ensures input doesn't overflow */
+        }
+        .login-form button {
+            width: 100%;
+            padding: 14px;
+            background-color: #2c3e50; /* Matches a professional textile brand feel */
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .login-form button:hover {
+            background-color: #34495e;
         }
     </style>
 </head>
 <body>
-    <div class="card" style="width: 100%; max-width: 380px; padding: 30px;">
-        <img src="mt-logo.png" alt="Mutoiba Textiles Logo" class="login-logo" onerror="this.src='https://via.placeholder.com/120?text=MT+Logo'">
 
-        <h2 style="text-align: center; color: var(--primary); margin-bottom: 5px;">Mutoiba Textiles</h2>
-        <p style="text-align: center; font-size: 0.8rem; color: #666; margin-bottom: 25px;">Inventory & Ledger Portal</p>
+    <div class="login-card">
+        <img src="mt-logo.png" alt="Mutoiba Textiles Logo" class="login-logo" onerror="this.src='https://via.placeholder.com/140x140?text=MT+Logo'">
+
+        <h1 style="margin: 0; color: #2c3e50; font-size: 1.8rem;">MUTOIBA TEXTILES</h1>
         
-        <form id="login-form">
-            <input type="email" id="email" placeholder="Admin Email" required style="width: 100%; margin-bottom: 15px;">
-            <input type="password" id="password" placeholder="Password" required style="width: 100%; margin-bottom: 20px;">
-            <button type="submit" style="width: 100%; padding: 12px; font-weight: bold;">Login to Dashboard</button>
+        <div class="business-address">
+            Al-Ahad Complex, Main Road, Azad Colony<br>
+            Near J&K Bank, Wagoora, J&K - 193109<br>
+            <strong>Ph: 7006261669</strong>
+        </div>
+
+        <p style="font-weight: bold; color: #888; margin-bottom: 20px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px;">Admin Access Only</p>
+        
+        <form id="login-form" class="login-form">
+            <input type="email" id="email" placeholder="Admin Email" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Login to Dashboard</button>
         </form>
     </div>
 
@@ -44,13 +91,12 @@
 
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            // Using IDs for better reliability
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             
             signInWithEmailAndPassword(auth, email, password)
                 .then(() => window.location.href = 'dashboard.html')
-                .catch(err => alert("Login Failed: " + err.message));
+                .catch(err => alert("Login Failed: Please check your credentials."));
         });
     </script>
 </body>
