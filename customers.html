@@ -8,20 +8,19 @@
     <style>
         .btn-edit { background: #3498db; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
         .btn-delete { background: #e74c3c; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
-        .btn-whatsapp { background: #25D366; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; text-decoration: none; display: inline-block; }
-        .btn-sms { background: #f39c12; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; text-decoration: none; display: inline-block; }
+        .btn-whatsapp { background: #25D366; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; border:none; }
+        .btn-sms { background: #f39c12; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; border:none; }
         
-        .action-gap { display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; align-items: center; }
-        .remind-group { border-left: 1px solid #ddd; padding-left: 10px; margin-left: 5px; display: flex; flex-direction: column; gap: 5px; }
+        .action-gap { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .remind-box { background: #f9f9f9; padding: 10px; border-radius: 8px; border: 1px solid #eee; display: flex; flex-direction: column; gap: 8px; }
         
-        /* Level Selector */
-        .reminder-toggle { font-size: 0.7rem; padding: 2px; border-radius: 4px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
+        .reminder-toggle { font-size: 0.8rem; padding: 5px; border-radius: 4px; border: 1px solid #2c3e50; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
     <nav class="nav-bar">
         <div style="display: flex; align-items: center; gap: 10px;">
-            <img src="mt-logo.png" alt="Logo" style="height: 30px; border-radius: 3px;">
+            <img src="mt-logo.png" alt="Logo" style="height: 35px; border-radius: 4px; background: white;">
             <strong>MUTOIBA TEXTILES</strong>
         </div>
         <div class="nav-links">
@@ -31,19 +30,19 @@
         </div>
     </nav>
 
-    <div style="padding: 2rem; max-width: 1250px; margin: auto;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+    <div style="padding: 2rem; max-width: 1300px; margin: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h2 style="margin: 0;">Customer Directory</h2>
-            <input type="text" id="searchInput" placeholder="🔍 Search by name or phone..." style="max-width: 300px; margin: 0;">
+            <input type="text" id="searchInput" placeholder="🔍 Search name or phone..." style="max-width: 300px;">
         </div>
         
-        <div class="table-container card" style="padding: 0;">
-            <table>
+        <div class="table-container card" style="padding: 0; overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
                 <thead>
-                    <tr>
-                        <th>Customer Name</th>
+                    <tr style="background: #2c3e50; color: white;">
+                        <th style="padding: 15px;">Customer Name</th>
                         <th>Contact No.</th>
-                        <th>Current Balance</th>
+                        <th>Balance (₹)</th>
                         <th style="text-align: center;">Actions & Reminders</th>
                     </tr>
                 </thead>
@@ -55,11 +54,6 @@
     <script type="module">
         import { db, auth } from './js/firebase.js';
         import { collection, getDocs, orderBy, query, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-        onAuthStateChanged(auth, (user) => {
-            if (!user) window.location.href = 'index.html';
-        });
 
         const listBody = document.getElementById('customer-list');
         const searchInput = document.getElementById('searchInput');
@@ -69,9 +63,7 @@
             const q = query(collection(db, "customers"), orderBy("name", "asc"));
             const querySnapshot = await getDocs(q);
             allCustomers = [];
-            querySnapshot.forEach(doc => {
-                allCustomers.push({ id: doc.id, ...doc.data() });
-            });
+            querySnapshot.forEach(doc => allCustomers.push({ id: doc.id, ...doc.data() }));
             renderTable(allCustomers);
         }
 
@@ -79,75 +71,74 @@
             listBody.innerHTML = "";
             data.forEach(cust => {
                 const balance = cust.balance || 0;
-                const badgeClass = balance > 0 ? 'badge-debt' : 'badge-clear';
                 const phone = cust.phone || "";
                 
-                // UPI Link Construction
-                const upiLink = `upi://pay?pa=7006261669@okaxis&pn=Mutoiba%20Textiles&am=${balance}&cu=INR`;
-
                 const tr = document.createElement('tr');
+                tr.style.borderBottom = "1px solid #eee";
                 tr.innerHTML = `
-                    <td style="font-weight: 600;">${cust.name}</td>
-                    <td style="color: #666;">${phone}</td>
-                    <td><span class="badge ${badgeClass}">Rs. ${balance.toLocaleString()}</span></td>
-                    <td class="action-gap">
-                        <a href="ledger.html?id=${cust.id}" class="btn-primary" style="padding: 6px 10px; text-decoration: none; border-radius: 5px; font-size: 0.8rem;">Ledger</a>
-                        <a href="generate-bill.html?id=${cust.id}" class="btn-accent" style="padding: 6px 10px; text-decoration: none; border-radius: 5px; font-size: 0.8rem;">+ Bill</a>
-                        <button class="btn-edit" data-id="${cust.id}" data-name="${cust.name}" data-phone="${phone}">Edit No.</button>
+                    <td style="padding: 15px; font-weight: 600;">${cust.name}</td>
+                    <td>${phone}</td>
+                    <td><strong style="color: ${balance > 0 ? '#e74c3c' : '#27ae60'}">₹ ${balance.toLocaleString('en-IN')}</strong></td>
+                    <td class="action-gap" style="padding: 10px;">
+                        <a href="ledger.html?id=${cust.id}" class="btn-primary" style="padding: 8px 12px; text-decoration: none; border-radius: 4px; font-size: 0.8rem;">Ledger</a>
+                        <a href="generate-bill.html?id=${cust.id}" class="btn-accent" style="padding: 8px 12px; text-decoration: none; border-radius: 4px; font-size: 0.8rem;">+ Bill</a>
                         
-                        <div class="remind-group">
+                        <div class="remind-box">
                             <select class="reminder-toggle" id="lvl-${cust.id}">
-                                <option value="gentle">Gentle Reminder</option>
-                                <option value="urgent">Urgent Reminder</option>
+                                <option value="1">1st/2nd Reminder (Gentle)</option>
+                                <option value="3">Urgent Reminder</option>
                             </select>
-                            <div style="display:flex; gap:3px;">
-                                <button class="btn-whatsapp" onclick="sendReminder('${cust.id}', 'wa', '${cust.name}', '${phone}', ${balance})">WhatsApp</button>
-                                <button class="btn-sms" onclick="sendReminder('${cust.id}', 'sms', '${cust.name}', '${phone}', ${balance})">SMS</button>
+                            <div style="display:flex; gap:5px;">
+                                <button class="btn-whatsapp" onclick="processReminder('${cust.id}', 'wa', '${cust.name}', '${phone}', ${balance})">WhatsApp</button>
+                                <button class="btn-sms" onclick="processReminder('${cust.id}', 'sms', '${cust.name}', '${phone}', ${balance})">SMS</button>
                             </div>
                         </div>
 
-                        <button class="btn-delete" data-id="${cust.id}" data-name="${cust.name}" style="background:#888;">Delete</button>
+                        <button class="btn-delete" onclick="deleteCustomer('${cust.id}', '${cust.name}')" style="background:#ddd; color:#333;">Delete</button>
                     </td>
                 `;
                 listBody.appendChild(tr);
             });
-
-            // Re-attach standard listeners
-            document.querySelectorAll('.btn-edit').forEach(btn => btn.onclick = handleEditPhone);
-            document.querySelectorAll('.btn-delete').forEach(btn => btn.onclick = handleDeleteCustomer);
         }
 
-        // Global function for reminders
-        window.sendReminder = function(id, type, name, phone, amount) {
+        window.processReminder = function(id, type, custName, phone, amount) {
             const level = document.getElementById(`lvl-${id}`).value;
             const shopName = "*MUTOIBA TEXTILES*";
-            const boldName = `*${name}*`;
-            const upiLink = `https://upilinks.in/payment-link/7006261669`; // Simplified web-friendly UPI link
+            const ownerName = "*Mudassir Hussain Rather*";
+            const boldCustName = `*${custName}*`;
+            
+            // Standard UPI Intent Link
+            const upiUrl = `upi://pay?pa=rashraftr786@okicici&pn=Mutoiba%20Textiles&am=${amount}&cu=INR`;
+            // Web-friendly link for those without direct intent support
+            const payLink = `https://upilinks.in/payment-link/rashraftr786@okicici`;
 
-            let message = "";
+            let msg = "";
 
-            if (level === "gentle") {
-                message = `Dear ${boldName},\n\nThis is a gentle reminder that an outstanding balance of ₹${amount} is pending with ${shopName}.\n\nWe kindly request you to clear the amount at your earliest convenience.\n\nPay Now: ${upiLink}\n\nThank you for your cooperation.\n– ${shopName}`;
+            if (level === "1") {
+                // Template 1: Gentle (Bold Names included)
+                msg = `Dear ${boldCustName},\n\nThis is a gentle reminder that an outstanding balance of *₹${amount}* is pending with ${shopName}.\n\nWe kindly request you to clear the amount at your earliest convenience.\n\n*Pay Now:* ${payLink}\n\nThank you for your cooperation.\n– ${ownerName}\n${shopName}`;
             } else {
-                message = `Dear ${boldName},\n\nDespite earlier reminders, your outstanding balance of ₹${amount} is still unpaid.\n\nPlease settle the amount immediately to avoid inconvenience.\n\nPay Now: ${upiLink}\n\n– ${shopName}`;
+                // Template 2: Urgent
+                msg = `Dear ${boldCustName},\n\nDespite earlier reminders, your outstanding balance of *₹${amount}* is still unpaid.\n\nPlease settle the amount immediately to avoid inconvenience.\n\n*Pay Now via UPI:* ${payLink}\n\n– ${shopName}`;
             }
 
             if (type === 'wa') {
-                window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(message)}`, '_blank');
+                window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`, '_blank');
             } else {
-                window.location.href = `sms:+91${phone}?body=${encodeURIComponent(message)}`;
+                window.location.href = `sms:+91${phone}?body=${encodeURIComponent(msg)}`;
             }
         };
 
-        // Existing EDIT & DELETE functions...
-        async function handleEditPhone(e) { /* code remains same */ }
-        async function handleDeleteCustomer(e) { /* code remains same */ }
+        window.deleteCustomer = async (id, name) => {
+            if(confirm(`Delete ${name}?`)) {
+                await deleteDoc(doc(db, "customers", id));
+                fetchCustomers();
+            }
+        };
 
         searchInput.addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
-            const filtered = allCustomers.filter(c => 
-                c.name.toLowerCase().includes(term) || (c.phone && c.phone.includes(term))
-            );
+            const filtered = allCustomers.filter(c => c.name.toLowerCase().includes(term) || (c.phone && c.phone.includes(term)));
             renderTable(filtered);
         });
 
@@ -155,4 +146,4 @@
     </script>
 </body>
 </html>
-                
+
