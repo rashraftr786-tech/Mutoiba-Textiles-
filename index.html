@@ -4,15 +4,37 @@
     <meta charset="UTF-8">
     <title>Mutoiba Textiles | Login</title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Ensures the login card is perfectly centered on the screen */
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f7f6; /* Light professional background */
+        }
+        .login-logo {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto 15px auto;
+            border-radius: 10px;
+        }
+    </style>
 </head>
-<body style="justify-content: center; align-items: center;">
-    <div class="card">
-        <h2 style="text-align: center; color: var(--primary);">Mutoiba Textiles</h2>
-        <p style="text-align: center; font-size: 0.8rem; color: #666;">Inventory & Ledger Portal</p>
+<body>
+    <div class="card" style="width: 100%; max-width: 380px; padding: 30px;">
+        <img src="mt-logo.png" alt="Mutoiba Textiles Logo" class="login-logo" onerror="this.src='https://via.placeholder.com/120?text=MT+Logo'">
+
+        <h2 style="text-align: center; color: var(--primary); margin-bottom: 5px;">Mutoiba Textiles</h2>
+        <p style="text-align: center; font-size: 0.8rem; color: #666; margin-bottom: 25px;">Inventory & Ledger Portal</p>
+        
         <form id="login-form">
-            <input type="email" id="email" placeholder="Admin Email" required>
-            <input type="password" id="password" placeholder="Password" required>
-            <button type="submit">Login to Dashboard</button>
+            <input type="email" id="email" placeholder="Admin Email" required style="width: 100%; margin-bottom: 15px;">
+            <input type="password" id="password" placeholder="Password" required style="width: 100%; margin-bottom: 20px;">
+            <button type="submit" style="width: 100%; padding: 12px; font-weight: bold;">Login to Dashboard</button>
         </form>
     </div>
 
@@ -22,8 +44,9 @@
 
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            const email = e.target[0].value;
-            const password = e.target[1].value;
+            // Using IDs for better reliability
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
             
             signInWithEmailAndPassword(auth, email, password)
                 .then(() => window.location.href = 'dashboard.html')
