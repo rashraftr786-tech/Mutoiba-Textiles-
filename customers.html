@@ -5,10 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Directory | Mutoiba Textiles</title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        .btn-edit { background: #3498db; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        .btn-delete { background: #e74c3c; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        .action-gap { display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; }
+    </style>
 </head>
 <body>
     <nav class="nav-bar">
-        <strong>Mutoiba Textiles</strong>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="mt-logo.png" alt="Logo" style="height: 30px; border-radius: 3px;">
+            <strong>Mutoiba Textiles</strong>
+        </div>
         <div class="nav-links">
             <a href="dashboard.html">Dashboard</a>
             <a href="stocks.html">Inventory</a>
@@ -32,15 +40,14 @@
                         <th style="text-align: center;">Actions</th>
                     </tr>
                 </thead>
-                <tbody id="customer-list">
-                    </tbody>
+                <tbody id="customer-list"></tbody>
             </table>
         </div>
     </div>
 
     <script type="module">
         import { db, auth } from './js/firebase.js';
-        import { collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { collection, getDocs, orderBy, query, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         onAuthStateChanged(auth, (user) => {
@@ -51,7 +58,6 @@
         const searchInput = document.getElementById('searchInput');
         let allCustomers = [];
 
-        // Fetch Customers
         async function fetchCustomers() {
             const q = query(collection(db, "customers"), orderBy("name", "asc"));
             const querySnapshot = await getDocs(q);
@@ -62,32 +68,71 @@
             renderTable(allCustomers);
         }
 
-        // Display Table
         function renderTable(data) {
             listBody.innerHTML = "";
             data.forEach(cust => {
                 const balance = cust.balance || 0;
                 const badgeClass = balance > 0 ? 'badge-debt' : 'badge-clear';
                 
-                listBody.innerHTML += `
-                    <tr>
-                        <td style="font-weight: 600;">${cust.name}</td>
-                        <td style="color: #666;">${cust.phone}</td>
-                        <td><span class="badge ${badgeClass}">Rs. ${balance.toLocaleString()}</span></td>
-                        <td style="text-align: center;">
-                            <a href="ledger.html?id=${cust.id}" class="btn-primary" style="padding: 6px 12px; text-decoration: none; border-radius: 5px; font-size: 0.8rem; margin-right: 5px;">Ledger</a>
-                            <a href="generate-bill.html?id=${cust.id}" class="btn-accent" style="padding: 6px 12px; text-decoration: none; border-radius: 5px; font-size: 0.8rem;">+ Bill</a>
-                        </td>
-                    </tr>
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight: 600;">${cust.name}</td>
+                    <td style="color: #666;">${cust.phone}</td>
+                    <td><span class="badge ${badgeClass}">Rs. ${balance.toLocaleString()}</span></td>
+                    <td class="action-gap">
+                        <a href="ledger.html?id=${cust.id}" class="btn-primary" style="padding: 6px 12px; text-decoration: none; border-radius: 5px; font-size: 0.8rem;">Ledger</a>
+                        <a href="generate-bill.html?id=${cust.id}" class="btn-accent" style="padding: 6px 12px; text-decoration: none; border-radius: 5px; font-size: 0.8rem;">+ Bill</a>
+                        <button class="btn-edit" data-id="${cust.id}" data-name="${cust.name}" data-phone="${cust.phone}">Edit No.</button>
+                        <button class="btn-delete" data-id="${cust.id}" data-name="${cust.name}">Delete</button>
+                    </td>
                 `;
+                listBody.appendChild(tr);
             });
+
+            // Attach Event Listeners
+            document.querySelectorAll('.btn-edit').forEach(btn => btn.onclick = handleEditPhone);
+            document.querySelectorAll('.btn-delete').forEach(btn => btn.onclick = handleDeleteCustomer);
         }
 
-        // Search Filter
+        // --- EDIT PHONE LOGIC ---
+        async function handleEditPhone(e) {
+            const id = e.target.dataset.id;
+            const currentPhone = e.target.dataset.phone;
+            const name = e.target.dataset.name;
+            
+            const newPhone = prompt(`Update Mobile Number for ${name}:`, currentPhone);
+            
+            if (newPhone && newPhone !== currentPhone) {
+                try {
+                    await updateDoc(doc(db, "customers", id), { phone: newPhone });
+                    alert("Mobile Number Updated!");
+                    fetchCustomers(); // Refresh table
+                } catch (err) {
+                    alert("Error updating phone: " + err.message);
+                }
+            }
+        }
+
+        // --- DELETE CUSTOMER LOGIC ---
+        async function handleDeleteCustomer(e) {
+            const id = e.target.dataset.id;
+            const name = e.target.dataset.name;
+
+            if (confirm(`Are you sure you want to DELETE ${name}?\nThis action cannot be undone.`)) {
+                try {
+                    await deleteDoc(doc(db, "customers", id));
+                    alert("Customer deleted successfully.");
+                    fetchCustomers(); // Refresh table
+                } catch (err) {
+                    alert("Error deleting customer: " + err.message);
+                }
+            }
+        }
+
         searchInput.addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
             const filtered = allCustomers.filter(c => 
-                c.name.toLowerCase().includes(term) || c.phone.includes(term)
+                c.name.toLowerCase().includes(term) || (c.phone && c.phone.includes(term))
             );
             renderTable(filtered);
         });
