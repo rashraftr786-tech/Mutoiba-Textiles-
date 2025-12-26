@@ -1,62 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Add Customer Test</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Customer | Mutoiba Textiles</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <nav class="nav-bar">
+        <strong>Mutoiba Textiles</strong>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="customers.html">Customer List</a>
+        </div>
+    </nav>
 
-<h2>Add Customer (Final Test)</h2>
+    <div style="padding: 2rem; display: flex; justify-content: center;">
+        <div class="card" style="max-width: 500px;">
+            <h2 style="color: var(--primary); margin-top: 0;">Register New Customer</h2>
+            <p style="color: #666; font-size: 0.9rem; margin-bottom: 20px;">
+                Enter customer details below to create a new ledger profile.
+            </p>
 
-<input id="customerName" placeholder="Name"><br><br>
-<input id="customerPhone" placeholder="Phone"><br><br>
-<input id="customerBalance" placeholder="Balance"><br><br>
+            <form id="add-customer-form">
+                <label style="font-size: 0.8rem; font-weight: bold;">Full Name</label>
+                <input type="text" id="cust-name" placeholder="e.g. John Doe" required>
 
-<button id="saveCustomerBtn">Save Customer</button>
+                <label style="font-size: 0.8rem; font-weight: bold;">WhatsApp / Phone Number</label>
+                <input type="tel" id="cust-phone" placeholder="e.g. +923001234567" required>
 
-<p id="status"></p>
+                <label style="font-size: 0.8rem; font-weight: bold;">Shop/Home Address</label>
+                <textarea id="cust-address" rows="3" placeholder="Street, City, Area..."></textarea>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, addDoc } from
-    "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+                <label style="font-size: 0.8rem; font-weight: bold;">Opening Balance (Optional)</label>
+                <input type="number" id="cust-balance" placeholder="0.00" value="0">
 
-  const status = document.getElementById("status");
+                <button type="submit" id="submit-btn" style="margin-top: 20px; background-color: var(--primary);">
+                    Create Customer Profile
+                </button>
+            </form>
+            
+            <div id="status-msg" style="margin-top: 15px; text-align: center; font-weight: bold; display: none;"></div>
+        </div>
+    </div>
 
-  status.innerText = "Script loaded ✅";
+    <script type="module">
+        import { db, auth } from './js/firebase.js';
+        import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFcVgtofCuu3uQpMiofAPm3JQ0xiaeJVQ",
-    authDomain: "mutoiba-textiles.firebaseapp.com",
-    projectId: "mutoiba-textiles",
-    storageBucket: "mutoiba-textiles.appspot.com",
-    messagingSenderId: "544691020034",
-    appId: "1:544691020034:web:82ee6c0f8e94256fbce21b"
-  };
+        // 1. Protect this page - Redirect to login if not logged in
+        onAuthStateChanged(auth, (user) => {
+            if (!user) window.location.href = 'index.html';
+        });
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+        const customerForm = document.getElementById('add-customer-form');
+        const statusMsg = document.getElementById('status-msg');
 
-  document.getElementById("saveCustomerBtn").onclick = async () => {
-    status.innerText = "Button clicked ✅";
+        // 2. Handle Form Submission
+        customerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // UI Feedback
+            const btn = document.getElementById('submit-btn');
+            btn.innerText = "Saving...";
+            btn.disabled = true;
 
-    try {
-      await addDoc(collection(db, "customers"), {
-        name: customerName.value,
-        phone: customerPhone.value,
-        balance: Number(customerBalance.value || 0),
-        createdAt: new Date()
-      });
+            const name = document.getElementById('cust-name').value;
+            const phone = document.getElementById('cust-phone').value;
+            const address = document.getElementById('cust-address').value;
+            const balance = parseFloat(document.getElementById('cust-balance').value) || 0;
 
-      status.innerText = "Customer SAVED successfully ✅";
+            try {
+                // Save to Firestore
+                await addDoc(collection(db, "customers"), {
+                    name: name,
+                    phone: phone,
+                    address: address,
+                    balance: balance,
+                    createdAt: serverTimestamp()
+                });
 
-    } catch (e) {
-      console.error(e);
-      status.innerText = "ERROR: " + e.message;
-    }
-  };
-</script>
+                // Success Message
+                statusMsg.style.color = "green";
+                statusMsg.innerText = "Customer Added Successfully!";
+                statusMsg.style.display = "block";
+                
+                customerForm.reset();
+                setTimeout(() => { window.location.href = 'customers.html'; }, 1500);
 
+            } catch (error) {
+                console.error("Error adding customer: ", error);
+                statusMsg.style.color = "var(--danger)";
+                statusMsg.innerText = "Error: " + error.message;
+                statusMsg.style.display = "block";
+            } finally {
+                btn.innerText = "Create Customer Profile";
+                btn.disabled = false;
+            }
+        });
+    </script>
 </body>
 </html>
