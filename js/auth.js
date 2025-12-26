@@ -1,33 +1,16 @@
-// customers.js
-import { db } from "./firebase.js";
-import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { auth } from "./firebase.js";
+import { signInWithEmailAndPassword } from
+  "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-document.getElementById("saveCustomerBtn")?.addEventListener("click", async () => {
-  try {
-    const name = document.getElementById("customerName").value.trim();
-    const phone = document.getElementById("customerPhone").value.trim();
-    const balance = Number(document.getElementById("customerBalance").value || 0);
+alert("auth.js loaded ✅");
 
-    if (!name || !phone) {
-      alert("Name and phone are required");
-      return;
-    }
+document.getElementById("loginBtn").addEventListener("click", () => {
+  alert("Login clicked ✅");
 
-    await addDoc(collection(db, "customers"), {
-      name,
-      phone,
-      balance,
-      createdAt: new Date()
-    });
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
 
-    alert("Customer saved successfully ✅");
-
-    customerName.value = "";
-    customerPhone.value = "";
-    customerBalance.value = "";
-
-  } catch (e) {
-    console.error(e);
-    alert(e.message);
-  }
+  signInWithEmailAndPassword(auth, email, password)
+    .then(() => window.location.href = "dashboard.html")
+    .catch(err => msg.innerText = err.message);
 });
