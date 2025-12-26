@@ -2,35 +2,30 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Add Customer – Mutoiba Textiles</title>
+  <title>Add Customer Test</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
 
-<h2>➕ Add Customer</h2>
+<h2>Add Customer (Final Test)</h2>
 
-<input id="customerName" placeholder="Customer Name">
-<br><br>
-
-<input id="customerPhone" placeholder="Mobile Number">
-<br><br>
-
-<input id="customerBalance" placeholder="Opening Balance (₹)">
-<br><br>
+<input id="customerName" placeholder="Name"><br><br>
+<input id="customerPhone" placeholder="Phone"><br><br>
+<input id="customerBalance" placeholder="Balance"><br><br>
 
 <button id="saveCustomerBtn">Save Customer</button>
 
-<!-- SCRIPT MUST BE AT END -->
+<p id="status"></p>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import {
-    getFirestore,
-    collection,
-    addDoc,
-    serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getFirestore, collection, addDoc } from
+    "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  // Firebase config
+  const status = document.getElementById("status");
+
+  status.innerText = "Script loaded ✅";
+
   const firebaseConfig = {
     apiKey: "AIzaSyDFcVgtofCuu3uQpMiofAPm3JQ0xiaeJVQ",
     authDomain: "mutoiba-textiles.firebaseapp.com",
@@ -40,50 +35,27 @@
     appId: "1:544691020034:web:82ee6c0f8e94256fbce21b"
   };
 
-  // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // Wait until page fully loads
-  document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("saveCustomerBtn").onclick = async () => {
+    status.innerText = "Button clicked ✅";
 
-    const btn = document.getElementById("saveCustomerBtn");
-    const nameInput = document.getElementById("customerName");
-    const phoneInput = document.getElementById("customerPhone");
-    const balanceInput = document.getElementById("customerBalance");
+    try {
+      await addDoc(collection(db, "customers"), {
+        name: customerName.value,
+        phone: customerPhone.value,
+        balance: Number(customerBalance.value || 0),
+        createdAt: new Date()
+      });
 
-    btn.addEventListener("click", async () => {
-      try {
-        const name = nameInput.value.trim();
-        const phone = phoneInput.value.trim();
-        const balance = Number(balanceInput.value || 0);
+      status.innerText = "Customer SAVED successfully ✅";
 
-        if (!name || !phone) {
-          alert("Customer name and phone are required");
-          return;
-        }
-
-        await addDoc(collection(db, "customers"), {
-          name: name,
-          phone: phone,
-          balance: balance,
-          createdAt: serverTimestamp()
-        });
-
-        alert("Customer saved successfully ✅");
-
-        // Clear form
-        nameInput.value = "";
-        phoneInput.value = "";
-        balanceInput.value = "";
-
-      } catch (error) {
-        console.error("Save failed:", error);
-        alert("Error: " + error.message);
-      }
-    });
-
-  });
+    } catch (e) {
+      console.error(e);
+      status.innerText = "ERROR: " + e.message;
+    }
+  };
 </script>
 
 </body>
