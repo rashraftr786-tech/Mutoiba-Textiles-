@@ -2,65 +2,85 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Management | Mutoiba Textiles</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <nav class="nav-bar">
         <strong>Mutoiba Textiles</strong>
-        <a href="dashboard.html" style="color: white;">← Back</a>
+        <a href="dashboard.html" style="color: white; text-decoration: none;">← Dashboard</a>
     </nav>
 
-    <div style="padding: 1rem; max-width: 800px; margin: auto;">
+    <div style="padding: 1rem; max-width: 900px; margin: auto;">
         <div class="card" style="max-width: 100%; margin-bottom: 20px;">
-            <h3>Add New Stock</h3>
-            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 10px;">
-                <input type="text" id="item-name" placeholder="Fabric Name (e.g. Cotton Latha)">
-                <input type="number" id="item-qty" placeholder="Yards/Qty">
-                <input type="number" id="item-price" placeholder="Price">
-                <button id="add-stock-btn">Add</button>
+            <h3 style="margin-top: 0;">Add/Update Stock</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <input type="text" id="item-name" placeholder="Fabric Name" style="flex: 2; min-width: 150px;">
+                <input type="number" id="item-qty" placeholder="Quantity (Yards)" style="flex: 1; min-width: 100px;">
+                <input type="number" id="item-price" placeholder="Sale Price" style="flex: 1; min-width: 100px;">
+                <button id="add-stock-btn" style="flex: 1;">Save Stock</button>
             </div>
         </div>
 
-        <h3>Available Inventory</h3>
-        <table style="width: 100%; background: white; border-radius: 8px;">
-            <thead style="background: var(--primary); color: white;">
-                <tr>
-                    <th style="padding: 10px; text-align: left;">Item</th>
-                    <th style="padding: 10px;">Qty</th>
-                    <th style="padding: 10px;">Price</th>
-                </tr>
-            </thead>
-            <tbody id="stock-list"></tbody>
-        </table>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; background: white; border-radius: 8px; border-collapse: collapse;">
+                <thead style="background: var(--primary); color: white;">
+                    <tr>
+                        <th style="padding: 12px; text-align: left;">Item Name</th>
+                        <th style="padding: 12px;">Available Qty</th>
+                        <th style="padding: 12px;">Price/Yard</th>
+                        <th style="padding: 12px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="stock-list"></tbody>
+            </table>
+        </div>
     </div>
 
     <script type="module">
         import { db } from './js/firebase.js';
-        import { collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const stockList = document.getElementById('stock-list');
 
         async function loadStocks() {
             const querySnapshot = await getDocs(collection(db, "stocks"));
             stockList.innerHTML = "";
-            querySnapshot.forEach((doc) => {
-                const s = doc.data();
+            querySnapshot.forEach((documentSnapshot) => {
+                const s = documentSnapshot.data();
                 stockList.innerHTML += `
                     <tr style="border-bottom: 1px solid #eee; text-align: center;">
-                        <td style="padding: 10px; text-align: left;">${s.itemName}</td>
-                        <td style="padding: 10px;">${s.quantity}</td>
-                        <td style="padding: 10px;">Rs. ${s.price}</td>
+                        <td style="padding: 12px; text-align: left; font-weight: bold;">${s.itemName}</td>
+                        <td style="padding: 12px;">${s.quantity} Yards</td>
+                        <td style="padding: 12px;">Rs. ${s.price}</td>
+                        <td style="padding: 12px;">
+                            <button onclick="deleteItem('${documentSnapshot.id}')" style="background: var(--danger); padding: 5px 10px; font-size: 0.7rem;">Delete</button>
+                        </td>
                     </tr>`;
             });
         }
+
+        window.deleteItem = async (id) => {
+            if(confirm("Delete this item?")) {
+                await deleteDoc(doc(db, "stocks", id));
+                location.reload();
+            }
+        };
 
         document.getElementById('add-stock-btn').onclick = async () => {
             const itemName = document.getElementById('item-name').value;
             const quantity = parseFloat(document.getElementById('item-qty').value);
             const price = parseFloat(document.getElementById('item-price').value);
 
-            await addDoc(collection(db, "stocks"), { itemName, quantity, price, date: serverTimestamp() });
+            if(!itemName || !quantity) return alert("Fill all fields");
+
+            await addDoc(collection(db, "stocks"), { 
+                itemName, 
+                quantity, 
+                price, 
+                lastUpdated: serverTimestamp() 
+            });
             location.reload();
         };
 
@@ -68,3 +88,4 @@
     </script>
 </body>
 </html>
+
