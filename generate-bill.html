@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bill Generator | Mutoiba Textiles</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        @media print { .no-print { display: none; } .card { box-shadow: none; border: 1px solid #000; } }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <nav class="nav-bar"><strong>Mutoiba Textiles</strong> <a href="dashboard.html" style="color: white;">← Back</a></nav>
+    </div>
+
+    <div id="bill-area" style="padding: 2rem; max-width: 600px; margin: auto;">
+        <div class="card" style="max-width: 100%;">
+            <h2 style="text-align: center; color: var(--primary);">MUTOIBA TEXTILES</h2>
+            <p style="text-align: center; font-size: 0.8rem;">Faisalabad, Pakistan | 0300-1234567</p>
+            <hr>
+            <div style="display: flex; justify-content: space-between;">
+                <p><strong>Customer:</strong> <span id="bill-cust-name">...</span></p>
+                <p><strong>Date:</strong> <span id="bill-date"></span></p>
+            </div>
+            
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #333;">
+                        <th style="text-align: left;">Item</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th style="text-align: right;">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="bill-items">
+                    </tbody>
+            </table>
+            <h3 style="text-align: right; border-top: 2px solid #333; padding-top: 10px;">Grand Total: Rs. <span id="grand-total">0</span></h3>
+        </div>
+        
+        <div class="no-print" style="margin-top: 20px; display: flex; gap: 10px;">
+            <button onclick="window.print()" style="background: #333;">Print Bill</button>
+            <button id="finalize-bill-btn">Save & Update Ledger</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // Logic to: 
+        // 1. Fetch customer from URL ?id=...
+        // 2. Load selected items
+        // 3. Subtract from 'stocks' collection
+        // 4. Add 'credit' entry to 'transactions' collection automatically
+    </script>
+</body>
+</html>
