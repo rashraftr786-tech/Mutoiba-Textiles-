@@ -2,51 +2,97 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Directory | Mutoiba Textiles</title>
     <link rel="stylesheet" href="css/style.css">
-    <title>Customer Directory</title>
 </head>
 <body>
     <nav class="nav-bar">
         <strong>Mutoiba Textiles</strong>
-        <a href="dashboard.html" style="color: white;">← Back</a>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="stocks.html">Inventory</a>
+            <a href="add-customer.html" style="color: var(--accent);">+ Add Customer</a>
+        </div>
     </nav>
 
-    <div style="padding: 2rem;">
-        <h2>Customer Directory</h2>
-        <input type="text" id="searchInput" placeholder="Search by name or phone..." style="margin-bottom: 20px;">
+    <div style="padding: 2rem; max-width: 1100px; margin: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+            <h2 style="margin: 0;">Customer Directory</h2>
+            <input type="text" id="searchInput" placeholder="🔍 Search by name or phone..." style="max-width: 300px; margin: 0;">
+        </div>
         
-        <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden;">
-            <thead style="background: var(--primary); color: white;">
-                <tr>
-                    <th style="padding: 15px; text-align: left;">Name</th>
-                    <th style="padding: 15px; text-align: left;">Phone</th>
-                    <th style="padding: 15px; text-align: left;">Action</th>
-                </tr>
-            </thead>
-            <tbody id="customer-list">
-                </tbody>
-        </table>
+        <div class="table-container card" style="padding: 0;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Customer Name</th>
+                        <th>Contact No.</th>
+                        <th>Current Balance</th>
+                        <th style="text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="customer-list">
+                    </tbody>
+            </table>
+        </div>
     </div>
 
     <script type="module">
-        import { db } from './js/firebase.js';
-        import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { db, auth } from './js/firebase.js';
+        import { collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const list = document.getElementById('customer-list');
-        const querySnapshot = await getDocs(collection(db, "customers"));
-        
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            list.innerHTML += `
-                <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 15px;">${data.name}</td>
-                    <td style="padding: 15px;">${data.phone}</td>
-                    <td style="padding: 15px;">
-                        <a href="ledger.html?id=${doc.id}" style="color: var(--primary); font-weight: bold;">View Ledger</a>
-                    </td>
-                </tr>
-            `;
+        onAuthStateChanged(auth, (user) => {
+            if (!user) window.location.href = 'index.html';
         });
+
+        const listBody = document.getElementById('customer-list');
+        const searchInput = document.getElementById('searchInput');
+        let allCustomers = [];
+
+        // Fetch Customers
+        async function fetchCustomers() {
+            const q = query(collection(db, "customers"), orderBy("name", "asc"));
+            const querySnapshot = await getDocs(q);
+            allCustomers = [];
+            querySnapshot.forEach(doc => {
+                allCustomers.push({ id: doc.id, ...doc.data() });
+            });
+            renderTable(allCustomers);
+        }
+
+        // Display Table
+        function renderTable(data) {
+            listBody.innerHTML = "";
+            data.forEach(cust => {
+                const balance = cust.balance || 0;
+                const badgeClass = balance > 0 ? 'badge-debt' : 'badge-clear';
+                
+                listBody.innerHTML += `
+                    <tr>
+                        <td style="font-weight: 600;">${cust.name}</td>
+                        <td style="color: #666;">${cust.phone}</td>
+                        <td><span class="badge ${badgeClass}">Rs. ${balance.toLocaleString()}</span></td>
+                        <td style="text-align: center;">
+                            <a href="ledger.html?id=${cust.id}" class="btn-primary" style="padding: 6px 12px; text-decoration: none; border-radius: 5px; font-size: 0.8rem; margin-right: 5px;">Ledger</a>
+                            <a href="generate-bill.html?id=${cust.id}" class="btn-accent" style="padding: 6px 12px; text-decoration: none; border-radius: 5px; font-size: 0.8rem;">+ Bill</a>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Search Filter
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allCustomers.filter(c => 
+                c.name.toLowerCase().includes(term) || c.phone.includes(term)
+            );
+            renderTable(filtered);
+        });
+
+        fetchCustomers();
     </script>
 </body>
 </html>
