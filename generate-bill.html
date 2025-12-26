@@ -5,45 +5,89 @@
     <title>Bill Generator | Mutoiba Textiles</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
-        @media print { .no-print { display: none; } body { background: white; } .card { box-shadow: none; border: none; } }
-        .bill-table th, .bill-table td { border-bottom: 1px solid #ddd; padding: 10px; text-align: left; }
+        @media print { 
+            .no-print { display: none; } 
+            body { background: white; padding: 0; } 
+            .card { box-shadow: none; border: none; width: 100% !important; max-width: 100% !important; }
+        }
+        .bill-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+        .bill-header h1 { margin: 0; font-size: 24px; letter-spacing: 1px; }
+        .bill-header p { margin: 2px 0; font-size: 13px; color: #333; }
+        
+        .bill-info { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 14px; }
+        
+        .bill-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .bill-table th { background: #f4f4f4; border: 1px solid #000; padding: 8px; text-align: left; }
+        .bill-table td { border: 1px solid #000; padding: 8px; text-align: left; }
+        
+        .total-section { text-align: right; margin-top: 15px; border-top: 1px solid #000; padding-top: 10px; }
+        .footer-note { margin-top: 30px; font-size: 12px; font-style: italic; border-top: 1px dashed #ccc; padding-top: 10px; }
+        .signature-area { display: flex; justify-content: space-between; margin-top: 50px; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="no-print">
-        <nav class="nav-bar"><strong>Mutoiba Textiles</strong> <a href="customers.html" style="color: white;">← Back</a></nav>
+        <nav class="nav-bar"><strong>Mutoiba Textiles</strong> <a href="customers.html" style="color: white; margin-left: 20px;">← Back</a></nav>
     </div>
 
-    <div style="padding: 1rem; max-width: 700px; margin: auto;">
-        <div class="card no-print" style="max-width: 100%; margin-bottom: 20px;">
+    <div style="padding: 1rem; max-width: 800px; margin: auto;">
+        <div class="card no-print" style="margin-bottom: 20px;">
             <h3>Select Item to Add</h3>
             <div style="display: flex; gap: 10px;">
                 <select id="stock-select" style="flex: 2; padding: 10px;"></select>
-                <input type="number" id="sell-qty" placeholder="Qty" style="flex: 1;">
-                <button id="add-to-bill" style="flex: 1;">Add Item</button>
+                <input type="number" id="sell-qty" placeholder="Qty" style="flex: 1; padding: 10px;">
+                <button id="add-to-bill" style="flex: 1; cursor: pointer;">Add Item</button>
             </div>
         </div>
 
-        <div id="printable-bill" class="card" style="max-width: 100%; background: #fff; color: #000;">
-            <h2 style="text-align: center; margin-bottom: 0;">MUTOIBA TEXTILES</h2>
-            <p style="text-align: center; margin-top: 5px; font-size: 0.8rem;">Al-Ahad Complex,Main Road, Azad Colony, Wagoora | 193109</p>
-            <hr>
-            <p><strong>Customer:</strong> <span id="bill-cust-name">Loading...</span></p>
-            <p><strong>Date:</strong> <span id="bill-date"></span></p>
+        <div id="printable-bill" class="card" style="background: #fff; color: #000; padding: 30px; border: 1px solid #eee;">
+            <div class="bill-header">
+                <h1>MUTOIBA TEXTILES</h1>
+                <p>Al-Ahad Complex, Main Road, Azad Colony, Near J&K Bank</p>
+                <p>Wagoora, Jammu & Kashmir - 193109</p>
+                <p><strong>Mobile:</strong> 7006261669 | <strong>Email:</strong> mutoibatextiles@gmail.com</p>
+            </div>
+
+            <div class="bill-info">
+                <div>
+                    <p><strong>Customer:</strong> <span id="bill-cust-name">Loading...</span></p>
+                </div>
+                <div style="text-align: right;">
+                    <p><strong>Date:</strong> <span id="bill-date"></span></p>
+                    <p><strong>Invoice No:</strong> <span id="bill-number">MT-2025-001</span></p>
+                </div>
+            </div>
             
-            <table class="bill-table" style="width: 100%; margin-top: 20px;">
+            <table class="bill-table">
                 <thead>
-                    <tr><th>Item</th><th>Qty</th><th>Rate</th><th>Total</th></tr>
+                    <tr>
+                        <th style="width: 50%;">Item Description</th>
+                        <th>Qty</th>
+                        <th>Rate (₹)</th>
+                        <th style="text-align: right;">Total (₹)</th>
+                    </tr>
                 </thead>
-                <tbody id="bill-items-body"></tbody>
+                <tbody id="bill-items-body">
+                    </tbody>
             </table>
 
-            <h2 style="text-align: right; margin-top: 20px;">Total: Rs. <span id="grand-total">0</span></h2>
+            <div class="total-section">
+                <h3>Grand Total: ₹ <span id="grand-total">0</span></h3>
+            </div>
+
+            <div class="footer-note">
+                <p><strong>Terms:</strong> Goods once sold are only exchangeable within 7 days with a valid bill. Cut pieces cannot be returned.</p>
+            </div>
+
+            <div class="signature-area">
+                <p>Customer Signature</p>
+                <p>For Mutoiba Textiles</p>
+            </div>
         </div>
 
-        <div class="no-print" style="margin-top: 20px; display: flex; gap: 10px;">
-            <button onclick="window.print()" style="background: #444;">Print Receipt</button>
-            <button id="finalize-bill" style="background: var(--primary);">Save & Update Ledger</button>
+        <div class="no-print" style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+            <button onclick="window.print()" style="background: #444; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Print Receipt</button>
+            <button id="finalize-bill" style="background: #2ecc71; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Save & Update Ledger</button>
         </div>
     </div>
 
@@ -56,13 +100,16 @@
         let billItems = [];
         let totalBill = 0;
 
-        // 1. Setup Page
+        // Set Date and Random Bill Number
         document.getElementById('bill-date').innerText = new Date().toLocaleDateString();
+        document.getElementById('bill-number').innerText = 'MT-' + Date.now().toString().slice(-6);
         
         const custSnap = await getDoc(doc(db, "customers", customerId));
-        document.getElementById('bill-cust-name').innerText = custSnap.data().name;
+        if (custSnap.exists()) {
+            document.getElementById('bill-cust-name').innerText = custSnap.data().name;
+        }
 
-        // 2. Load Stock into Dropdown
+        // Load Stock
         const stockSnap = await getDocs(collection(db, "stocks"));
         const select = document.getElementById('stock-select');
         stockSnap.forEach(d => {
@@ -70,7 +117,7 @@
             select.innerHTML += `<option value="${d.id}" data-price="${s.price}" data-name="${s.itemName}">${s.itemName} (Stock: ${s.quantity})</option>`;
         });
 
-        // 3. Add Item to Temp List
+        // Add Item
         document.getElementById('add-to-bill').onclick = () => {
             const opt = select.options[select.selectedIndex];
             const qty = parseFloat(document.getElementById('sell-qty').value);
@@ -78,11 +125,12 @@
             const name = opt.dataset.name;
             const stockId = select.value;
 
-            if(!qty) return;
+            if(!qty || qty <= 0) { alert("Please enter a valid quantity"); return; }
 
             const rowTotal = qty * price;
             billItems.push({ stockId, name, qty, price, rowTotal });
             updateBillUI();
+            document.getElementById('sell-qty').value = ""; // Clear input
         };
 
         function updateBillUI() {
@@ -91,34 +139,43 @@
             totalBill = 0;
             billItems.forEach(item => {
                 totalBill += item.rowTotal;
-                body.innerHTML += `<tr><td>${item.name}</td><td>${item.qty}</td><td>${item.price}</td><td style="text-align:right">${item.rowTotal}</td></tr>`;
+                body.innerHTML += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.qty}</td>
+                        <td>${item.price.toFixed(2)}</td>
+                        <td style="text-align:right">${item.rowTotal.toFixed(2)}</td>
+                    </tr>`;
             });
-            document.getElementById('grand-total').innerText = totalBill;
+            document.getElementById('grand-total').innerText = totalBill.toLocaleString('en-IN');
         }
 
-        // 4. Finalize (Update Inventory & Ledger)
+        // Finalize
         document.getElementById('finalize-bill').onclick = async () => {
-            if(billItems.length === 0) return;
+            if(billItems.length === 0) { alert("Add at least one item"); return; }
 
-            // Add to Ledger as Credit
-            await addDoc(collection(db, "transactions"), {
-                customerId, amount: totalBill, type: 'credit', date: serverTimestamp(), note: 'Purchase Bill'
-            });
+            try {
+                await addDoc(collection(db, "transactions"), {
+                    customerId, amount: totalBill, type: 'credit', date: serverTimestamp(), note: 'Purchase Bill'
+                });
 
-            // Update Customer Total Balance
-            const newBalance = (custSnap.data().balance || 0) + totalBill;
-            await updateDoc(doc(db, "customers", customerId), { balance: newBalance });
+                const newBalance = (custSnap.data().balance || 0) + totalBill;
+                await updateDoc(doc(db, "customers", customerId), { balance: newBalance });
 
-            // Subtract Stocks
-            for (const item of billItems) {
-                const sRef = doc(db, "stocks", item.stockId);
-                const sSnap = await getDoc(sRef);
-                await updateDoc(sRef, { quantity: sSnap.data().quantity - item.qty });
+                for (const item of billItems) {
+                    const sRef = doc(db, "stocks", item.stockId);
+                    const sSnap = await getDoc(sRef);
+                    await updateDoc(sRef, { quantity: sSnap.data().quantity - item.qty });
+                }
+
+                alert("Bill Finalized Successfully!");
+                window.location.href = `ledger.html?id=${customerId}`;
+            } catch (error) {
+                console.error("Error finalizing bill: ", error);
+                alert("Something went wrong!");
             }
-
-            alert("Bill Finalized!");
-            window.location.href = `ledger.html?id=${customerId}`;
         };
     </script>
 </body>
 </html>
+                
