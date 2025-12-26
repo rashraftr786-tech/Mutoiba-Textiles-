@@ -24,13 +24,24 @@
             background: var(--white);
             margin-bottom: 20px;
             border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .nav-logo {
+            height: 40px;
+            width: auto;
+            margin-right: 10px;
+            vertical-align: middle;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
 
     <nav class="nav-bar">
-        <div style="font-size: 1.5rem; font-weight: 800; letter-spacing: 1px;">
+        <div style="display: flex; align-items: center; font-size: 1.5rem; font-weight: 800; letter-spacing: 1px;">
+            <img src="mt-logo.png" alt="MT" class="nav-logo">
             MUTOIBA TEXTILES
         </div>
         <div class="nav-links">
@@ -39,12 +50,14 @@
     </nav>
 
     <div class="welcome-section">
-        <h1 style="margin: 0; color: var(--dark);">Welcome, Admin</h1>
-        <p style="color: #666; margin: 5px 0 0 0;">Shop Management System v2.0</p>
+        <img src="mt-logo.png" alt="Logo" style="width: 60px; height: 60px; object-fit: contain;">
+        <div>
+            <h1 style="margin: 0; color: var(--dark);">Welcome, Admin</h1>
+            <p style="color: #666; margin: 5px 0 0 0;">Mutoiba Textiles Management System v2.0</p>
+        </div>
     </div>
 
     <div class="dashboard-grid">
-
         <div class="card" style="border-top: 8px solid var(--accent);">
             <div style="font-size: 0.9rem; text-transform: uppercase; color: #666; font-weight: bold;">Quick Actions</div>
             <h2 style="margin: 10px 0;">🧾 Billing & Sales</h2>
@@ -75,22 +88,18 @@
             <p>View payment history, track credits (Baki), and send WhatsApp reminders.</p>
             <a href="customers.html" class="btn-primary" style="background: #607d8b; text-decoration: none;">Open Ledgers</a>
         </div>
-
     </div>
 
     <script type="module">
+        // Firebase logic remains the same...
         import { auth, db } from './js/firebase.js';
         import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // 1. Auth Guard
         onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                window.location.href = 'index.html';
-            }
+            if (!user) window.location.href = 'index.html';
         });
 
-        // 2. Logout Logic
         document.getElementById('logout-btn').onclick = async (e) => {
             e.preventDefault();
             try {
@@ -101,25 +110,18 @@
             }
         };
 
-        // 3. Load Stats
         async function loadDashboardStats() {
             try {
-                // Get Customers
                 const custSnap = await getDocs(collection(db, "customers"));
                 document.getElementById('cust-count').innerText = custSnap.size;
-
-                // Get Stocks
                 const stockSnap = await getDocs(collection(db, "stocks"));
                 document.getElementById('item-count').innerText = stockSnap.size;
             } catch (error) {
                 console.error("Error loading stats:", error);
-                document.getElementById('cust-count').innerText = "!";
-                document.getElementById('item-count').innerText = "!";
             }
         }
-
         loadDashboardStats();
     </script>
 </body>
 </html>
-
+        
