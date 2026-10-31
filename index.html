@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MCQ Studio — Foundational · Preparatory · Middle Stage</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --bg:#f5f6fa; --card:#ffffff; --ink:#1b2233; --muted:#6b7280; --line:#e5e7eb;
+    --accent:#4f46e5; --accent2:#0ea5e9; --ok:#16a34a; --bad:#dc2626; --warn:#d97706;
+    --radius:14px; --shadow:0 1px 2px rgba(16,24,40,.06),0 8px 24px rgba(16,24,40,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  header{
+    background:linear-gradient(120deg,#4f46e5 0%,#0ea5e9 100%);
+    color:#fff; padding:20px 22px 16px;
+  }
+  header h1{margin:0;font-size:1.35rem;letter-spacing:-.02em}
+  header p{margin:4px 0 0;font-size:.85rem;opacity:.9}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 16px 60px}
+  nav.tabs{
+    display:flex;gap:6px;flex-wrap:wrap;margin:16px auto 22px;max-width:1180px;padding:0 16px;
+  }
+  .tab{
+    border:1px solid var(--line);background:#fff;color:var(--muted);
+    padding:9px 16px;border-radius:999px;cursor:pointer;font-size:.875rem;font-weight:600;
+    transition:.15s;
+  }
+  .tab:hover{color:var(--ink);border-color:#c7cbd6}
+  .tab.active{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 6px 16px rgba(79,70,229,.28)}
+  .view{display:none;animation:fade .2s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:18px}
+  .card h2{margin:0 0 4px;font-size:1.05rem}
+  .card .sub{color:var(--muted);font-size:.85rem;margin:0 0 16px}
+
+  #dropzone{
+    border:2px dashed #c7cbd6;border-radius:var(--radius);padding:34px 20px;text-align:center;
+    background:#fafbff;transition:.15s;cursor:pointer;
+  }
+  #dropzone.drag{border-color:var(--accent);background:#eef2ff}
+  #dropzone .big{font-size:2rem;line-height:1}
+  #dropzone h3{margin:8px 0 4px;font-size:1rem}
+  #dropzone p{margin:0;color:var(--muted);font-size:.85rem}
+
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;border:1px solid var(--accent);background:var(--accent);
+    color:#fff;padding:9px 16px;border-radius:10px;font-size:.875rem;font-weight:600;cursor:pointer;
+    transition:.15s;font-family:inherit;
+  }
+  .btn:hover{filter:brightness(1.07)}
+  .btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+  .btn.ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+  .btn.ghost:hover{background:#f3f4f6}
+  .btn.danger{background:#fff;color:var(--bad);border-color:#fecaca}
+  .btn.danger:hover{background:#fef2f2}
+  .btn.sm{padding:6px 11px;font-size:.8rem;border-radius:8px}
+
+  .row{display:flex;gap:14px;flex-wrap:wrap}
+  .row > *{flex:1 1 200px;min-width:0}
+  label.field{display:block;font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+  select,input[type=text],input[type=number]{
+    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;
+    font-size:.9rem;font-family:inherit;color:var(--ink);outline:none;
+  }
+  select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,70,229,.13)}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
+  .stat .n{font-size:1.6rem;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+  .stat .l{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-top:2px}
+
+  .badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:.72rem;font-weight:700;
+    background:#eef2ff;color:#4338ca;white-space:nowrap}
+  .badge.green{background:#dcfce7;color:#15803d}
+  .badge.orange{background:#ffedd5;color:#c2410c}
+  .badge.ghost{background:#f3f4f6;color:#4b5563}
+
+  table{width:100%;border-collapse:collapse;font-size:.85rem}
+  th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
+     padding:9px 10px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:1}
+  td{padding:9px 10px;border-bottom:1px solid #f1f2f6;vertical-align:top}
+  tr:hover td{background:#fafbff}
+  .tablebox{max-height:520px;overflow:auto;border:1px solid var(--line);border-radius:12px}
+
+  .report{font-size:.85rem}
+  .report ul{margin:8px 0 0;padding-left:18px}
+  .report li{margin-bottom:3px}
+  .err{color:var(--bad)}
+  .okc{color:var(--ok)}
+  .warnc{color:var(--warn)}
+  .muted{color:var(--muted)}
+  .small{font-size:.8rem}
+  .spacer{flex:1}
+
+  /* quiz */
+  .qcard{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+  .qbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .progress{height:7px;background:#eef0f6;border-radius:999px;overflow:hidden;margin-bottom:18px}
+  .progress > div{height:100%;background:linear-gradient(90deg,#4f46e5,#0ea5e9);border-radius:999px;transition:width .25s}
+  .qtext{font-size:1.05rem;margin:0 0 18px;line-height:1.55}
+  .options{display:grid;gap:10px}
+  .opt{
+    display:flex;align-items:flex-start;gap:12px;text-align:left;width:100%;
+    padding:13px 15px;border:1.5px solid var(--line);border-radius:12px;background:#fff;
+    cursor:pointer;font-size:.92rem;font-family:inherit;color:var(--ink);transition:.13s;
+  }
+  .opt:hover{border-color:#a5b4fc;background:#fafbff}
+  .opt.sel{border-color:var(--accent);background:#eef2ff;box-shadow:0 0 0 3px rgba(79,70,229,.1)}
+  .opt .key{
+    flex:0 0 26px;height:26px;display:grid;place-items:center;border-radius:8px;
+    background:#f3f4f6;font-weight:800;font-size:.78rem;color:#4b5563;
+  }
+  .opt.sel .key{background:var(--accent);color:#fff}
+  .qnav{display:flex;gap:10px;justify-content:space-between;margin-top:20px}
+
+  /* results */
+  .score{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+  .ring{
+    --p:0;width:120px;height:120px;border-radius:50%;display:grid;place-items:center;
+    background:conic-gradient(var(--accent) calc(var(--p)*1%), #eef0f6 0);
+  }
+  .ring > div{width:92px;height:92px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    font-size:1.4rem;font-weight:800}
+  .review{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;background:#fff}
+  .review.correct{border-left:4px solid var(--ok)}
+  .review.wrong{border-left:4px solid var(--bad)}
+  .review .ans{font-size:.85rem;margin-top:6px}
+  .review .ans b{font-weight:700}
+  .expl{font-size:.83rem;color:var(--muted);margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
+
+  #toast{position:fixed;right:18px;bottom:18px;background:#111827;color:#fff;padding:12px 18px;
+    border-radius:12px;font-size:.86rem;opacity:0;transform:translateY(10px);transition:.25s;pointer-events:none;
+    max-width:340px;z-index:99}
+  #toast.show{opacity:1;transform:none}
+  #toast.bad{background:#b91c1c}
+  #toast.good{background:#15803d}
+  @media (max-width:640px){
+    .qnav{flex-direction:column-reverse}
+    .qnav .btn{width:100%;justify-content:center}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap" style="padding:0">
+    <h1>📚 MCQ Studio</h1>
+    <p>Upload an Excel file · organise by Stage &amp; Domain · conduct quizzes · review results</p>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-tab="upload">1 · Upload</button>
+  <button class="tab" data-tab="bank">2 · Question Bank</button>
+  <button class="tab" data-tab="quiz">3 · Take Quiz</button>
+  <button class="tab" data-tab="results">4 · Results</button>
+</nav>
+
+<div class="wrap">
+
+  <!-- ================= UPLOAD ================= -->
+  <section class="view active" id="view-upload">
+    <div class="stats" id="stats"></div>
+
+    <div class="card">
+      <h2>Upload question file</h2>
+      <p class="sub">Supports .xlsx, .xls and .csv. Each row = one MCQ. Use the template to get the exact column names.</p>
+
+      <div id="dropzone">
+        <div class="big">📥</div>
+        <h3>Drop your Excel file here</h3>
+        <p>or click to browse</p>
+        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" hidden />
+      </div>
+
+      <div class="row" style="margin-top:16px">
+        <div><button class="btn ghost" id="tplBtn">⬇ Download Excel template</button></div>
+        <div><button class="btn ghost" id="exportBtn">⬆ Export current bank</button></div>
+        <div><button class="btn danger" id="clearBtn">🗑 Clear question bank</button></div>
+      </div>
+    </div>
+
+    <div class="card" id="reportCard" style="display:none">
+      <h2>Import report</h2>
+      <div class="report" id="reportBody"></div>
+    </div>
+
+    <div class="card">
+      <h2>Expected file format</h2>
+      <p class="sub">The column headers are matched flexibly (case/spacing/small spelling differences are tolerated).</p>
+      <div class="tablebox" style="max-height:none">
+        <table>
+          <thead><tr><th>Column</th><th>Required</th><th>Accepted values</th></tr></thead>
+          <tbody>
+            <tr><td><b>Stage</b></td><td class="okc">Yes</td><td>Foundational · Preparatory · Middle</td></tr>
+            <tr><td><b>Domain/Subject</b></td><td class="okc">Yes</td><td>One of the listed domains for that stage (see template sheet “Valid Combinations”)</td></tr>
+            <tr><td><b>Question</b></td><td class="okc">Yes</td><td>Question text</td></tr>
+            <tr><td><b>Option A – Option D</b></td><td class="okc">Yes (min 2)</td><td>Answer choices</td></tr>
+            <tr><td><b>Correct Answer</b></td><td class="okc">Yes</td><td><code>A</code>/<code>B</code>/<code>C</code>/<code>D</code>, or <code>1</code>–<code>4</code>, or the exact option text</td></tr>
+            <tr><td><b>Explanation</b></td><td class="muted">Optional</td><td>Shown in the answer review</td></tr>
+            <tr><td><b>Difficulty</b></td><td class="muted">Optional</td><td>Easy / Medium / Hard</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= BANK ================= -->
+  <section class="view" id="view-bank">
+    <div class="card">
+      <h2>Question bank</h2>
+      <p class="sub" id="bankCount">—</p>
+      <div class="row" style="margin-bottom:14px">
+        <div>
+          <label class="field">Stage</label>
+          <select id="fStage"></select>
+        </div>
+        <div>
+          <label class="field">Domain / Subject</label>
+          <select id="fSubject"></select>
+        </div>
+        <div>
+          <label class="field">Search</label>
+          <input type="text" id="fSearch" placeholder="Search question text…" />
+        </div>
+      </div>
+      <div class="tablebox">
+        <table>
+          <thead><tr><th>#</th><th>Stage</th><th>Domain / Subject</th><th>Question</th><th>Answer</th><th></th></tr></thead>
+          <tbody id="bankBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= QUIZ SETUP / RUNNER ================= -->
+  <section class="view" id="view-quiz">
+    <div class="card" id="quizSetupCard">
+      <h2>Start a quiz</h2>
+      <p class="sub">Choose a stage and domain, then set how many questions you want.</p>
+      <div class="row">
+        <div>
+          <label class="field">Stage</label>
+          <select id="qStage"></select>
+        </div>
+        <div>
+          <label class="field">Domain / Subject</label>
+          <select id="qSubject"></select>
+        </div>
+        <div>
+          <label class="field">Number of questions</label>
+          <input type="number" id="qCount" min="1" value="10" />
+        </div>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <div><label style="display:flex;gap:8px;align-items:center;font-size:.87rem">
+          <input type="checkbox" id="shuffleQ" checked style="width:auto" /> Shuffle questions
+        </label></div>
+        <div><label style="display:flex;gap:8px;align-items:center;font-size:.87rem">
+          <input type="checkbox" id="shuffleO" /> Shuffle options
+        </label></div>
+      </div>
+      <p class="small muted" id="poolInfo" style="margin:14px 0 0"></p>
+      <div style="margin-top:16px">
+        <button class="btn" id="startQuizBtn">▶ Start quiz</button>
+      </div>
+    </div>
+
+    <div id="quizHost"></div>
+  </section>
+
+  <!-- ================= RESULTS ================= -->
+  <section class="view" id="view-results">
+    <div id="resultsHost"><div class="card"><p class="muted" style="margin:0">No results yet — take a quiz first.</p></div></div>
+  </section>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* =====================================================================
+   1. CONFIGURATION — stages and their domains / subjects
+   ===================================================================== */
+const STAGES = {
+  foundational: {
+    label: 'Foundational Stage',
+    subjects: [
+      'Physical Development',
+      'Socio-Emotional and Ethical Development',
+      'Cognitive Development',
+      'Language and Literacy Development',
+      'Aesthetic and Cultural Development',
+      'Positive Learning Habits'
+    ]
+  },
+  preparatory: {
+    label: 'Preparatory Stage',
+    subjects: [
+      'Language Education (R1)',
+      'Language Education (R2)',
+      'Mathematics',
+      'The World Around Us',
+      'Art Education (AE)',
+      'Physical Education and Well-being',
+      'Other Learning Activities (Participation in Cultural, Sports, Reading and other activities)'
+    ]
+  },
+  middle: {
+    label: 'Middle Stage',
+    subjects: [
+      'Language 1 (R1)',
+      'Language 2 (R2)',
+      'Language 3 (R3)',
+      'Mathematics',
+      'Science',
+      'Social Science',
+      'Art Education',
+      'Physical Education & Well Being',
+      'Skill Education',
+      'Other Learning Activities (Participation in Cultural, Sports, Reading and other activities)',
+      'Bagless Days for Vocational Experience'
+    ]
+  }
+};
+const STAGE_KEYS = Object.keys(STAGES);
+
+/* =====================================================================
+   2. UTILITIES
+   ===================================================================== */
+const norm = s => String(s ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const esc  = s => String(s ?? '').replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid  = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const tokens = s => String(s ?? '').toLowerCase().replace(/[^a-z0-9\s]/g,' ')
+  .split(/\s+/).filter(t => t && t.length > 1);
+
+function toast(msg, kind = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + kind;
+  clearTimeout(t._tm);
+  t._tm = setTimeout(() => { t.className = ''; }, 3200);
+}
+
+/* =====================================================================
+   3. FUZZY MATCHERS  (stage / subject / answer)
+   ===================================================================== */
+function matchStage(raw) {
+  const n = norm(raw);
+  if (!n) return null;
+  if (n.startsWith('found') || n.startsWith('fln') || n === 'f') return 'foundational';
+  if (n.startsWith('prep') || n === 'p') return 'preparatory';
+  if (n.startsWith('mid') || n.startsWith('upper') || n === 'm') return 'middle';
+  return null;
+}
+
+function matchSubject(stageKey, raw) {
+  const list = STAGES[stageKey].subjects;
+  const n = norm(raw);
+  if (!n) return null;
+
+  let best = null, bestScore = 0;
+  for (const s of list) {
+    const ns = norm(s);
+    let score = 0;
+
+    if (ns === n) score = 1000;
+    else if (ns.startsWith(n) || n.startsWith(ns)) score = 700 + Math.min(ns.length, n.length);
+    else if (ns.includes(n) || n.includes(ns)) score = 500 + Math.min(ns.length, n.length);
+    else {
+      const a = tokens(n), b = tokens(s);
+      const overlap = a.filter(t => b.includes(t)).length;
+      if (overlap && a.length) {
+        const ratio = overlap / Math.max(a.length, b.length);
+        if (ratio >= 0.55) score = 300 + ratio * 100;
+      }
+    }
+    if (score > bestScore) { bestScore = score; best = s; }
+  }
+  return bestScore >= 300 ? best : null;
+}
+
+function resolveAnswer(raw, options) {
+  const v = String(raw ?? '').trim();
+  if (!v) return -1;
+  const nv = norm(v);
+
+  const m = nv.match(/^(?:option|opt|choice|ans)?([a-d])$/);
+  if (m) return m[1].charCodeAt(0) - 97;
+
+  if (/^[1-4]$/.test(nv)) return parseInt(nv, 10) - 1;
+
+  let idx = options.findIndex(o => norm(o) === nv);
+  if (idx >= 0) return idx;
+
+  idx = options.findIndex(o => norm(o) && (nv.includes(norm(o)) || norm(o).includes(nv)));
+  return idx;
+}
+
+/* =====================================================================
+   4. STATE + STORAGE
+   ===================================================================== */
+const LS_KEY = 'mcq_studio_bank_v1';
+let BANK = [];          // { id, stage, subject, question, options[], answerIndex, explanation, difficulty }
+let quiz = null;        // { items, idx, answers[], startedAt, finished }
+let bankFilter = { stage: 'all', subject: 'all', q: '' };
+
+function loadBank() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    BANK = raw ? (JSON.parse(raw) || []) : [];
+  } catch (e) { BANK = []; }
+}
+function saveBank() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(BANK)); }
+  catch (e) { toast('Browser storage is full — export your bank to keep it safe.', 'bad'); }
+}
+
+/* =====================================================================
+   5. EXCEL IMPORT
+   ===================================================================== */
+const HEADER_ALIASES = {
+  stage:       ['stage','level','stagename','stagelevel','classstage'],
+  subject:     ['subject','domain','domainorsubject','subjectordomain','subjectdomain','domainsubject','learningarea','area'],
+  question:    ['question','questiontext','questionstatement','questionstem','stem','q','mcq'],
+  optionA:     ['optiona','opta','opt1','option1','choicea','choice1','a'],
+  optionB:     ['optionb','optb','opt2','option2','choiceb','choice2','b'],
+  optionC:     ['optionc','optc','opt3','option3','choicec','choice3','c'],
+  optionD:     ['optiond','optd','opt4','option4','choiced','choice4','d'],
+  answer:      ['correctanswer','answer','correctoption','correctchoice','correct','ans','key'],
+  explanation: ['explanation','rationale','reason','solution','answerdescription'],
+  difficulty:  ['difficulty','difficultylevel','complexity']
+};
+
+function pickColumn(nrow, aliases) {
+  for (const a of aliases) {
+    if (nrow[a] !== undefined && String(nrow[a]).trim() !== '') return nrow[a];
+  }
+  return '';
+}
+
+function processWorkbook(wb, fileName) {
+  const report = { added: 0, duplicates: 0, blank: 0, errors: [] };
+  const seen = new Set(BANK.map(q => q.stage + '|' + q.subject + '|' + norm(q.question)));
+
+  wb.SheetNames.forEach(sheetName => {
+    const ws = wb.Sheets[sheetName];
+    if (!ws) return;
+    const rows = XLSX.utils.sheet_to_json(ws, { defval: '', raw: false });
+
+    rows.forEach((row, i) => {
+      const rowNo = i + 2; // header is row 1
+
+      // normalise header keys of this row
+      const nrow = {};
+      Object.keys(row).forEach(k => { nrow[norm(k)] = row[k]; });
+
+      const rawStage   = pickColumn(nrow, HEADER_ALIASES.stage);
+      const rawSubject = pickColumn(nrow, HEADER_ALIASES.subject);
+      const rawQ       = pickColumn(nrow, HEADER_ALIASES.question);
+
+      // skip fully blank / reference rows silently
+      if (!String(rawQ).trim() && !String(rawSubject).trim() && !String(rawStage).trim()) {
+        report.blank++; return;
+      }
+      if (!String(rawQ).trim()) { report.blank++; return; }
+
+      /* ---- stage ---- */
+      let stageKey = matchStage(rawStage);
+
+      // if stage missing, try to infer from a subject that is unique to one stage
+      if (!stageKey && rawSubject) {
+        const hits = STAGE_KEYS.filter(k => matchSubject(k, rawSubject));
+        if (hits.length === 1) stageKey = hits[0];
+      }
+      if (!stageKey) {
+        report.errors.push({ sheet: sheetName, row: rowNo,
+          msg: `Unknown stage "${rawStage}". Use Foundational, Preparatory or Middle.` });
+        return;
+      }
+
+      /* ---- subject ---- */
+      const subject = matchSubject(stageKey, rawSubject);
+      if (!subject) {
+        report.errors.push({ sheet: sheetName, row: rowNo,
+          msg: `"${rawSubject}" is not a valid domain for the ${STAGES[stageKey].label}.` });
+        return;
+      }
+
+      /* ---- options ---- */
+      const rawOpts = [
+        pickColumn(nrow, HEADER_ALIASES.optionA),
+        pickColumn(nrow, HEADER_ALIASES.optionB),
+        pickColumn(nrow, HEADER_ALIASES.optionC),
+        pickColumn(nrow, HEADER_ALIASES.optionD)
+      ].map(v => String(v).trim());
+
+      if (rawOpts.filter(Boolean).length < 2) {
+        report.errors.push({ sheet: sheetName, row: rowNo,
+          msg: 'At least two answer options are required.' });
+        return;
+      }
+
+      /* ---- correct answer ---- */
+      const rawAns = pickColumn(nrow, HEADER_ALIASES.answer);
+      const ai = resolveAnswer(rawAns, rawOpts);
+      if (ai < 0 || !rawOpts[ai]) {
+        report.errors.push({ sheet: sheetName, row: rowNo,
+          msg: `Could not read the correct answer from "${rawAns}".` });
+        return;
+      }
+
+      // drop empty option slots but keep track of which one is correct
+      const kept = rawOpts.map((t, idx) => ({ t, correct: idx === ai })).filter(o => o.t);
+      const options = kept.map(o => o.t);
+      const answerIndex = kept.findIndex(o => o.correct);
+
+      /* ---- duplicate check ---- */
+      const key = stageKey + '|' + subject + '|' + norm(rawQ);
+      if (seen.has(key)) { report.duplicates++; return; }
+      seen.add(key);
+
+      BANK.push({
+        id: uid(),
+        stage: stageKey,
+        subject,
+        question: String(rawQ).trim(),
+        options,
+        answerIndex,
+        explanation: String(pickColumn(nrow, HEADER_ALIASES.explanation) || '').trim(),
+        difficulty: String(pickColumn(nrow, HEADER_ALIASES.difficulty) || '').trim(),
+        source: fileName + ' › ' + sheetName
+      });
+      report.added++;
+    });
+  });
+
+  saveBank();
+  renderEverything();
+  showReport(report, fileName);
+}
+
+function showReport(r, fileName) {
+  const card = document.getElementById('reportCard');
+  const body = document.getElementById('reportBody');
+  card.style.display = 'block';
+
+  const errList = r.errors.slice(0, 60).map(e =>
+    `<li class="err">${esc(e.sheet)} · row ${e.row}: ${esc(e.msg)}</li>`).join('');
+  const more = r.errors.length > 60
+    ? `<li class="muted">…and ${r.errors.length - 60} more issues.</li>` : '';
+
+  body.innerHTML = `
+    <p><b>${esc(fileName)}</b> processed.</p>
+    <ul>
+      <li class="okc">✔ ${r.added} question(s) added</li>
+      <li class="warnc">↺ ${r.duplicates} duplicate(s) skipped</li>
+      <li class="muted">— ${r.blank} blank row(s) ignored</li>
+      <li class="${r.errors.length ? 'err' : 'muted'}">✖ ${r.errors.length} row(s) with problems</li>
+    </ul>
+    ${r.errors.length ? `<p style="margin:12px 0 0"><b>Details</b></p><ul>${errList}${more}</ul>` : ''}
+  `;
+  toast(`${r.added} question(s) imported`, r.added ? 'good' : 'bad');
+}
+
+/* =====================================================================
+   6. RENDERING — stats, bank, quiz setup
+   ===================================================================== */
+function renderEverything() {
+  renderStats();
+  renderBankFilters();
+  renderBank();
+  renderQuizSetup();
+}
+
+function renderStats() {
+  const host = document.getElementById('stats');
+  const total = BANK.length;
+  host.innerHTML = `<div class="stat"><div class="n">${total}</div><div class="l">Total questions</div></div>` +
+    STAGE_KEYS.map(k => {
+      const c = BANK.filter(q => q.stage === k).length;
+      return `<div class="stat"><div class="n">${c}</div><div class="l">${STAGES[k].label}</div></div>`;
+    }).join('');
+}
+
+/* ---------- bank ---------- */
+function renderBankFilters() {
+  const fs = document.getElementById('fStage');
+  fs.innerHTML = `<option value="all">All stages</option>` +
+    STAGE_KEYS.map(k => `<option value="${k}">${esc(STAGES[k].label)}</option>`).join('');
+  fs.value = bankFilter.stage;
+
+  const fsub = document.getElementById('fSubject');
+  if (bankFilter.stage === 'all') {
+    fsub.innerHTML = `<option value="all">All domains / subjects</option>`;
+    fsub.disabled = true;
+  } else {
+    fsub.disabled = false;
+    fsub.innerHTML = `<option value="all">All domains / subjects</option>` +
+      STAGES[bankFilter.stage].subjects.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+    fsub.value = bankFilter.subject;
+  }
+}
+
+function filteredBank() {
+  return BANK.filter(q =>
+    (bankFilter.stage === 'all' || q.stage === bankFilter.stage) &&
+    (bankFilter.subject === 'all' || q.subject === bankFilter.subject) &&
+    (!bankFilter.q || q.question.toLowerCase().includes(bankFilter.q))
+  );
+}
+
+function renderBank() {
+  const list = filteredBank();
+  document.getElementById('bankCount').textContent =
+    `${list.length} question(s) shown · ${BANK.length} in bank`;
+
+  const body = document.getElementById('bankBody');
+  if (!list.length) {
+    body.innerHTML = `<tr><td colspan="6" class="muted" style="padding:24px;text-align:center">
+      No questions match this filter. Upload an Excel file to add some.</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = list.slice(0, 400).map((q, i) => `
+    <tr>
+      <td class="muted small">${i + 1}</td>
+      <td><span class="badge ${
+        q.stage === 'foundational' ? 'green' : q.stage === 'preparatory' ? 'orange' : ''
+      }">${esc(STAGES[q.stage].label.replace(' Stage',''))}</span></td>
+      <td class="small">${esc(q.subject)}</td>
+      <td>${esc(q.question)}</td>
+      <td class="small"><b>${String.fromCharCode(65 + q.answerIndex)}</b> · ${esc(q.options[q.answerIndex])}</td>
+      <td><button class="btn danger sm" data-del="${q.id}">Delete</button></td>
+    </tr>`).join('') +
+    (list.length > 400
+      ? `<tr><td colspan="6" class="muted" style="text-align:center;padding:12px">
+           Showing first 400 of ${list.length}. Narrow the filter to see more.</td></tr>` : '');
+
+  body.querySelectorAll('[data-del]').forEach(b => {
+    b.onclick = () => {
+      BANK = BANK.filter(q => q.id !== b.dataset.del);
+      saveBank(); renderEverything();
+      toast('Question deleted');
+    };
+  });
+}
+
+/* ---------- quiz setup ---------- */
+function renderQuizSetup() {
+  const qs = document.getElementById('qStage');
+  const prev = qs.value;
+  qs.innerHTML = `<option value="all">All stages (mixed)</option>` +
+    STAGE_KEYS.map(k => `<option value="${k}">${esc(STAGES[k].label)}</option>`).join('');
+  qs.value = prev && [...qs.options].some(o => o.value === prev) ? prev : 'all';
+  updateQuizSubjects();
+}
+
+function updateQuizSubjects() {
+  const stage = document.getElementById('qStage').value;
+  const sub = document.getElementById('qSubject');
+
+  if (stage === 'all') {
+    sub.disabled = true;
+    sub.innerHTML = `<option value="all">All domains / subjects</option>`;
+  } else {
+    sub.disabled = false;
+    sub.innerHTML = `<option value="all">All domains in this stage</option>` +
+      STAGES[stage].subjects.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+  }
+  updatePoolInfo();
+}
+
+function currentPool() {
+  const stage = document.getElementById('qStage').value;
+  const subject = document.getElementById('qSubject').value;
+  return BANK.filter(q =>
+    (stage === 'all' || q.stage === stage) &&
+    (subject === 'all' || q.subject === subject)
+  );
+}
+
+function updatePoolInfo() {
+  const pool = currentPool();
+  const info = document.getElementById('poolInfo');
+  const cnt = document.getElementById('qCount');
+  info.textContent = `${pool.length} question(s) available in this selection.`;
+  if (pool.length) {
+    cnt.max = pool.length;
+    if (+cnt.value > pool.length) cnt.value = pool.length;
+  }
+  document.getElementById('startQuizBtn').disabled = pool.length === 0;
+  if (!pool.length) {
+    info.textContent = 'No questions available for this selection — upload more or choose another domain.';
+  }
+}
+
+/* =====================================================================
+   7. QUIZ ENGINE
+   ===================================================================== */
+function startQuiz() {
+  const stage = document.getElementById('qStage').value;
+  const subject = document.getElementById('qSubject').value;
+  let count = Math.max(1, parseInt(document.getElementById('qCount').value || '10', 10));
+  const doShuffleQ = document.getElementById('shuffleQ').checked;
+  const doShuffleO = document.getElementById('shuffleO').checked;
+
+  let pool = currentPool().slice();
+  if (!pool.length) return;
+  if (doShuffleQ) shuffle(pool);
+  pool = pool.slice(0, Math.min(count, pool.length));
+
+  const items = pool.map(q => {
+    let opts = q.options.map((t, i) => ({ t, correct: i === q.answerIndex }));
+    if (doShuffleO) opts = shuffle(opts);
+    return {
+      question: q.question,
+      options: opts.map(o => o.t),
+      answerIndex: opts.findIndex(o => o.correct),
+      explanation: q.explanation,
+      stage: q.stage,
+      subject: q.subject
+    };
+  });
+
+  quiz = {
+    items,
+    idx: 0,
+    answers: new Array(items.length).fill(null),
+    startedAt: Date.now(),
+    finished: false,
+    label: stage === 'all' ? 'All stages' : STAGES[stage].label
+  };
+
+  document.getElementById('quizSetupCard').style.display = 'none';
+  renderQuiz();
+  showTab('quiz');
+}
+
+function renderQuiz() {
+  const host = document.getElementById('quizHost');
+  if (!quiz) { host.innerHTML = ''; return; }
+  if (quiz.finished) { renderResults(); return; }
+
+  const it = quiz.items[quiz.idx];
+  const sel = quiz.answers[quiz.idx];
+  const pct = Math.round(quiz.idx / quiz.items.length * 100);
+  const isLast = quiz.idx === quiz.items.length - 1;
+
+  host.innerHTML = `
+    <div class="qcard">
+      <div class="qbar">
+        <span class="badge">${esc(STAGES[it.stage].label)}</span>
+        <span class="badge ghost">${esc(it.subject)}</span>
+        <span class="spacer"></span>
+        <span class="muted small">Question ${quiz.idx + 1} of ${quiz.items.length}</span>
+      </div>
+      <div class="progress"><div style="width:${pct}%"></div></div>
+      <h3 class="qtext">${esc(it.question)}</h3>
+      <div class="options">
+        ${it.options.map((o, i) => `
+          <button class="opt ${sel === i ? 'sel' : ''}" data-i="${i}">
+            <span class="key">${String.fromCharCode(65 + i)}</span>
+            <span>${esc(o)}</span>
+          </button>`).join('')}
+      </div>
+      <div class="qnav">
+        <button class="btn ghost" id="prevBtn" ${quiz.idx === 0 ? 'disabled' : ''}>← Previous</button>
+        <button class="btn" id="nextBtn" ${sel == null ? 'disabled' : ''}>
+          ${isLast ? 'Finish & see score' : 'Next →'}
+        </button>
+      </div>
+    </div>`;
+
+  host.querySelectorAll('.opt').forEach(b => {
+    b.onclick = () => { quiz.answers[quiz.idx] = +b.dataset.i; renderQuiz(); };
+  });
+  host.querySelector('#prevBtn').onclick = () => { if (quiz.idx > 0) { quiz.idx--; renderQuiz(); } };
+  host.querySelector('#nextBtn').onclick = () => {
+    if (quiz.idx === quiz.items.length - 1) finishQuiz();
+    else { quiz.idx++; renderQuiz(); }
+  };
+}
+
+function finishQuiz() {
+  quiz.finished = true;
+  quiz.timeMs = Date.now() - quiz.startedAt;
+  renderQuiz();          // renders results
+  showTab('results');
+}
+
+/* =====================================================================
+   8. RESULTS
+   ===================================================================== */
+function renderResults() {
+  const host = document.getElementById('resultsHost');
+  if (!quiz || !quiz.finished) {
+    host.innerHTML = `<div class="card"><p class="muted" style="margin:0">No results yet — take a quiz first.</p></div>`;
+    return;
+  }
+
+  const total = quiz.items.length;
+  const correct = quiz.items.reduce((n, it, i) => n + (quiz.answers[i] === it.answerIndex ? 1 : 0), 0);
+  const pct = Math.round(correct / total * 100);
+  const mins = Math.floor(quiz.timeMs / 60000);
+  const secs = Math.floor((quiz.timeMs % 60000) / 1000);
+
+  // per-domain breakdown
+  const bySubject = {};
+  quiz.items.forEach((it, i) => {
+    const k = it.stage + '||' + it.subject;
+    bySubject[k] = bySubject[k] || { correct: 0, total: 0, stage: it.stage, subject: it.subject };
+    bySubject[k].total++;
+    if (quiz.answers[i] === it.answerIndex) bySubject[k].correct++;
+  });
+
+  const breakdown = Object.values(bySubject).map(s => {
+    const p = Math.round(s.correct / s.total * 100);
+    return `<tr>
+      <td><span class="badge ghost">${esc(STAGES[s.stage].label.replace(' Stage',''))}</span></td>
+      <td class="small">${esc(s.subject)}</td>
+      <td>${s.correct} / ${s.total}</td>
+      <td><b class="${p >= 60 ? 'okc' : 'err'}">${p}%</b></td>
+    </tr>`;
+  }).join('');
+
+  const review = quiz.items.map((it, i) => {
+    const given = quiz.answers[i];
+    const ok = given === it.answerIndex;
+    return `<div class="review ${ok ? 'correct' : 'wrong'}">
+      <div><b>Q${i + 1}.</b> ${esc(it.question)}</div>
+      <div class="ans">Your answer:
+        <b class="${ok ? 'okc' : 'err'}">${given == null ? 'Not answered' :
+          String.fromCharCode(65 + given) + '. ' + esc(it.options[given])}</b>
+      </div>
+      ${ok ? '' : `<div class="ans">Correct answer:
+        <b class="okc">${String.fromCharCode(65 + it.answerIndex)}. ${esc(it.options[it.answerIndex])}</b></div>`}
+      ${it.explanation ? `<div class="expl"><b>Explanation:</b> ${esc(it.explanation)}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  host.innerHTML = `
+    <div class="card">
+      <h2>Result summary</h2>
+      <p class="sub">${esc(quiz.label)} · completed in ${mins}m ${secs}s</p>
+      <div class="score">
+        <div class="ring" style="--p:${pct}"><div>${pct}%</div></div>
+        <div>
+          <div style="font-size:1.5rem;font-weight:800;letter-spacing:-.02em">${correct} / ${total} correct</div>
+          <div class="muted small">${total - correct} incorrect or unanswered</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Breakdown by domain</h2>
+      <div class="tablebox" style="max-height:none">
+        <table><thead><tr><th>Stage</th><th>Domain / Subject</th><th>Score</th><th>%</th></tr></thead>
+        <tbody>${breakdown}</tbody></table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Answer review</h2>
+      <p class="sub">Every question with your answer and the correct one.</p>
+      ${review}
+      <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" id="againBtn">▶ New quiz</button>
+        <button class="btn ghost" id="backBankBtn">Browse question bank</button>
+      </div>
+    </div>`;
+
+  host.querySelector('#againBtn').onclick = () => {
+    quiz = null;
+    document.getElementById('quizHost').innerHTML = '';
+    document.getElementById('quizSetupCard').style.display = 'block';
+    renderQuizSetup();
+    showTab('quiz');
+  };
+  host.querySelector('#backBankBtn').onclick = () => showTab('bank');
+}
+
+/* =====================================================================
+   9. TEMPLATE + EXPORT
+   ===================================================================== */
+function downloadTemplate() {
+  const headers = ['Stage','Domain/Subject','Question','Option A','Option B','Option C','Option D',
+                   'Correct Answer','Explanation','Difficulty'];
+  const samples = [
+    ['Foundational','Physical Development',
+     'Which activity best develops gross motor skills in a 5-year-old?',
+     'Skipping and hopping','Sorting coloured beads','Reciting a poem','Colouring a picture',
+     'A','Gross motor skills involve the large muscle groups used for running, jumping and hopping.','Easy'],
+    ['Foundational','Positive Learning Habits',
+     'A child puts away toys after play without being told. This shows:',
+     'Independence in routine','Competitive behaviour','Rote memory','Physical strength',
+     'A','Following routines independently is a positive learning habit.','Easy'],
+    ['Preparatory','Mathematics',
+     'What is 3/4 of 20?',
+     '5','10','15','18','C','20 ÷ 4 = 5, and 5 × 3 = 15.','Medium'],
+    ['Preparatory','The World Around Us',
+     'Which of these is a source of water in nature?',
+     'River','Brick','Chair','Pencil','A','Rivers are natural water bodies.','Easy'],
+    ['Middle','Science',
+     'Which of the following is a renewable source of energy?',
+     'Coal','Solar energy','Petrol','Natural gas','B',
+     'Solar energy is continuously replenished by the sun.','Easy'],
+    ['Middle','Social Science',
+     'The Directive Principles of State Policy are found in which part of the Indian Constitution?',
+     'Part III','Part IV','Part V','Part II','B',
+     'Directive Principles are in Part IV (Articles 36–51).','Medium']
+  ];
+
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...samples]);
+  ws['!cols'] = [{wch:16},{wch:46},{wch:56},{wch:22},{wch:22},{wch:22},{wch:22},{wch:14},{wch:52},{wch:11}];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'MCQs');
+
+  const ref = [['Stage','Domain / Subject']];
+  STAGE_KEYS.forEach(k => STAGES[k].subjects.forEach(s => ref.push([STAGES[k].label, s])));
+  const ws2 = XLSX.utils.aoa_to_sheet(ref);
+  ws2['!cols'] = [{wch:22},{wch:80}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Valid Combinations');
+
+  const ws3 = XLSX.utils.aoa_to_sheet([
+    ['Instructions'],
+    ['1. Enter one MCQ per row on the "MCQs" sheet.'],
+    ['2. Stage must be Foundational, Preparatory or Middle.'],
+    ['3. Domain/Subject must match one of the pairs on the "Valid Combinations" sheet.'],
+    ['4. Correct Answer can be A/B/C/D, 1-4, or the exact option text.'],
+    ['5. Explanation and Difficulty are optional.'],
+    ['6. You may add more sheets; all sheets are read.']
+  ]);
+  ws3['!cols'] = [{wch:100}];
+  XLSX.utils.book_append_sheet(wb, ws3, 'Instructions');
+
+  XLSX.writeFile(wb, 'MCQ_Import_Template.xlsx');
+}
+
+function exportBank() {
+  if (!BANK.length) { toast('Question bank is empty', 'bad'); return; }
+  const headers = ['Stage','Domain/Subject','Question','Option A','Option B','Option C','Option D',
+                   'Correct Answer','Explanation','Difficulty'];
+  const rows = BANK.map(q => {
+    const o = [0,1,2,3].map(i => q.options[i] || '');
+    return [STAGES[q.stage].label, q.subject, q.question, ...o,
+            String.fromCharCode(65 + q.answerIndex), q.explanation || '', q.difficulty || ''];
+  });
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  ws['!cols'] = headers.map(h => ({ wch: Math.max(14, h.length + 6) }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Question Bank');
+  XLSX.writeFile(wb, 'MCQ_Bank_Export.xlsx');
+  toast('Bank exported', 'good');
+}
+
+/* =====================================================================
+   10. NAVIGATION + EVENT WIRING
+   ===================================================================== */
+function showTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === id));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + id));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.querySelectorAll('.tab').forEach(t => {
+  t.onclick = () => {
+    showTab(t.dataset.tab);
+    if (t.dataset.tab === 'bank') { renderBankFilters(); renderBank(); }
+    if (t.dataset.tab === 'quiz' && !quiz) { renderQuizSetup(); }
+  };
+});
+
+/* upload */
+const fileInput = document.getElementById('fileInput');
+const dropzone  = document.getElementById('dropzone');
+
+dropzone.onclick = () => fileInput.click();
+fileInput.onchange = e => { if (e.target.files.length) handleFile(e.target.files[0]); fileInput.value = ''; };
+
+['dragenter','dragover'].forEach(ev => dropzone.addEventListener(ev, e => {
+  e.preventDefault(); dropzone.classList.add('drag');
+}));
+['dragleave','drop'].forEach(ev => dropzone.addEventListener(ev, e => {
+  e.preventDefault(); dropzone.classList.remove('drag');
+}));
+dropzone.addEventListener('drop', e => {
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+
+function handleFile(file) {
+  const name = file.name.toLowerCase();
+  if (!/\.(xlsx|xls|csv)$/.test(name)) {
+    toast('Please choose an .xlsx, .xls or .csv file', 'bad');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      processWorkbook(wb, file.name);
+    } catch (err) {
+      toast('Could not read the file: ' + err.message, 'bad');
+    }
+  };
+  reader.onerror = () => toast('Could not read the file', 'bad');
+  reader.readAsArrayBuffer(file);
+}
+
+document.getElementById('tplBtn').onclick = downloadTemplate;
+document.getElementById('exportBtn').onclick = exportBank;
+document.getElementById('clearBtn').onclick = () => {
+  if (!BANK.length) { toast('Bank is already empty'); return; }
+  if (confirm(`Delete all ${BANK.length} questions? This cannot be undone.`)) {
+    BANK = []; saveBank(); renderEverything();
+    document.getElementById('reportCard').style.display = 'none';
+    toast('Question bank cleared');
+  }
+};
+
+/* bank filters */
+document.getElementById('fStage').onchange = e => {
+  bankFilter.stage = e.target.value;
+  bankFilter.subject = 'all';
+  renderBankFilters(); renderBank();
+};
+document.getElementById('fSubject').onchange = e => {
+  bankFilter.subject = e.target.value;
+  renderBank();
+};
+document.getElementById('fSearch').oninput = e => {
+  bankFilter.q = e.target.value.trim().toLowerCase();
+  renderBank();
+};
+
+/* quiz setup */
+document.getElementById('qStage').onchange = updateQuizSubjects;
+document.getElementById('qSubject').onchange = updatePoolInfo;
+document.getElementById('qCount').oninput = updatePoolInfo;
+document.getElementById('startQuizBtn').onclick = startQuiz;
+
+/* =====================================================================
+   11. BOOT
+   ===================================================================== */
+loadBank();
+renderEverything();
+if (!BANK.length) {
+  toast('Welcome! Download the template and upload your first Excel file.');
+}
+</script>
+</body>
+</html>
